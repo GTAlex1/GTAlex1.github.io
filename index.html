@@ -14,7 +14,6 @@
                 color: #0b3d91; /* Color principal del texto, excepto título */
             }
 
-            /* Cabecera */
             header {
                 background-color: #0b3d91;
                 color: white;
@@ -31,24 +30,23 @@
                 color: white; /* El título mantiene el blanco */
             }
 
-            /* Subtítulo */
             h2 {
                 text-align: center;
                 margin-top: 40px;
                 color: #0b3d91;
             }
 
-            /* Navegación */
-            nav ul {
+             nav ul {
                 list-style-type: none;
                 padding: 0;
                 display: flex;
-                justify-content: center;
-                gap: 10px; /* Un poquito más juntos */
+                flex-direction: column; /* Esto hace que sea vertical */
+                align-items: center;    /* Centrar los enlaces */
+                gap: 10px;              /* Espacio entre enlaces */
                 margin: 20px 0;
             }
             nav li {
-                display: inline;
+                display: block;
             }
             nav a {
                 text-decoration: none; 
@@ -56,9 +54,7 @@
                 padding: 0; /* Sin relleno extra */
             }
 
-            /* Footer */
             footer {
-                background-color: #f1f1f1;
                 text-align: center;
                 padding: 10px 0;
                 font-size: 0.9em;
