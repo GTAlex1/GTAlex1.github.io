@@ -11,6 +11,7 @@
                 margin: 0;
                 padding: 0;
                 line-height: 1.6;
+                color: #0b3d91; /* Color principal del texto, excepto título */
             }
 
             /* Cabecera */
@@ -27,6 +28,7 @@
             }
             h1 {
                 text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+                color: white; /* El título mantiene el blanco */
             }
 
             /* Subtítulo */
@@ -42,24 +44,16 @@
                 padding: 0;
                 display: flex;
                 justify-content: center;
-                gap: 20px;
+                gap: 10px; /* Un poquito más juntos */
                 margin: 20px 0;
             }
             nav li {
                 display: inline;
             }
             nav a {
-                text-decoration: none;
-                color: white;
-                background-color: #0b3d91;
-                padding: 8px 15px;
-                border-radius: 5px;
-                font-family: 'Verdana', sans-serif;
-                font-weight: bold;
-                transition: 0.3s;
-            }
-            nav a:hover {
-                background-color: #062a5e;
+                text-decoration: none; 
+                color: #0b3d91; /* Mantiene el color azul original */
+                padding: 0; /* Sin relleno extra */
             }
 
             /* Footer */
@@ -68,7 +62,7 @@
                 text-align: center;
                 padding: 10px 0;
                 font-size: 0.9em;
-                color: #333;
+                color: #0b3d91; /* Todo el texto azul igual que enlaces */
             }
             footer strong {
                 color: #0b3d91;
