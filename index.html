@@ -7,7 +7,6 @@
         <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
 
         <style>
-
             body {
                 background: linear-gradient(to right, #a1c4fd, #c2e9fb);
                 font-family: 'Source Code Pro', monospace;
@@ -39,18 +38,32 @@
                 color: #0b3d91;
             }
 
-             nav ul {
-                list-style-position: inside;
-                list-style-type: disc; 
-                text-align: center; 
+            /* --- AQUÍ ESTÁN LOS CAMBIOS --- */
+            
+            nav {
+                text-align: center; /* 1. Esto centra la caja de la lista en la pantalla */
+                margin-top: 20px;
             }
 
+            nav ul {
+                display: inline-block; /* 2. Hace que la lista ocupe solo el ancho del texto, no todo la pantalla */
+                text-align: left;      /* 3. Alinea los puntos y el texto a la izquierda dentro de la caja */
+                list-style-type: disc; 
+                list-style-position: inside;
+                padding: 20px;         /* Un poco de espacio alrededor para que no se vea apretado */
+                
+                /* Opcional: Un borde suave o fondo para destacar el menú */
+                border-radius: 8px;
+            }
+
+            /* --- FIN DE LOS CAMBIOS --- */
 
             footer {
                 text-align: center;
                 padding: 10px 0;
                 font-size: 0.9em;
                 color: #0b3d91;
+                margin-top: 40px; /* Un poco de aire antes del footer */
             }
             footer strong {
                 color: #0b3d91;
