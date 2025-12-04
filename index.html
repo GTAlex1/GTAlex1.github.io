@@ -7,6 +7,7 @@
         <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro&display=swap" rel="stylesheet">
 
         <style>
+
             body {
                 background: linear-gradient(to right, #a1c4fd, #c2e9fb);
                 font-family: 'Source Code Pro', monospace;
@@ -38,28 +39,12 @@
                 color: #0b3d91;
             }
 
-            /* --- CAMBIOS CLAVE AQUÍ --- */
-            nav ul {
-                list-style-type: none; /* Elimina las viñetas */
-                padding: 0;            /* Elimina el padding por defecto */
-                margin: 20px 0;        /* Espacio superior e inferior */
-                
-                display: flex;         /* *** Activa Flexbox para alineación horizontal *** */
-                justify-content: center; /* *** Centra los elementos uniformemente *** */
-                gap: 40px;             /* *** Añade espacio entre los elementos LI *** */
+             nav ul {
+                list-style-position: inside;
+                list-style-type: disc; 
+                text-align: center; 
             }
 
-            nav ul li {
-                /* Estilo opcional para simular las líneas HR con un borde inferior */
-                border-bottom: 2px solid #0b3d91; 
-                padding-bottom: 5px; 
-                transition: border-color 0.3s;
-            }
-            
-            nav ul li:hover {
-                border-color: #c2e9fb; /* Efecto hover */
-            }
-            /* --- FIN CAMBIOS --- */
 
             footer {
                 text-align: center;
@@ -70,7 +55,7 @@
             footer strong {
                 color: #0b3d91;
             }
-    </style>
+        </style>
     </head>
     <body>
         <header>
@@ -80,8 +65,8 @@
         <nav>
                 <ul>
                     <li>Contenido principal de <a href="https://gtalex1.github.io/HLC"><strong>HLC</strong></a></li> <hr>
-                    <li>Ejercicios de  <a href="https://php-g2bf.onrender.com"><strong>PHP</strong></a></li>
-                    <li>Páginas de <a href="https://gtalex1.github.io/pagservicios"><strong>Servicios en Red</strong></a></li>
+                    <li>Contenido principal de <a href="https://php-g2bf.onrender.com"><strong>PHP</strong></a></li> <hr>
+                    <li>Contenido principal de <a href="https://gtalex1.github.io/pagservicios"><strong>SER</strong></a></li> <hr>
 
                 </ul>
         </nav>
