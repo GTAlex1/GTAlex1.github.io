@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente compras</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0a0a0c;
+            --card-bg: #16161a;
+            --accent-primary: #6366f1;
+            --accent-secondary: #a855f7;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.15) 0%, transparent 35%),
+                radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.15) 0%, transparent 35%);
+            background-attachment: fixed;
+        }
+
+        .glass {
+            background: rgba(22, 22, 26, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Estilo para el título dinámico */
+        .dynamic-title {
+            background: linear-gradient(
+                to right, 
+                #818cf8, 
+                #c084fc, 
+                #ff71cf, 
+                #818cf8
+            );
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textFlow 8s linear infinite;
+        }
+
+        @keyframes textFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Corregir bug de estiramiento: items-start evita que las tarjetas crezcan juntas */
+        .meal-grid {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 1.5rem;
+            align-items: start; 
+        }
+
+        @media (min-width: 768px) {
+            .meal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (min-width: 1024px) {
+            .meal-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+
+        .meal-card {
+            background: #1c1c21;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            height: fit-content;
+        }
+
+        .meal-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.1);
+        }
+
+        .meal-card.selected {
+            background: linear-gradient(145deg, rgba(99, 102, 241, 0.1), rgba(168, 85, 247, 0.1));
+            border-color: var(--accent-primary);
+        }
+
+        .accordion-content {
+            display: grid;
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s ease-out;
+        }
+
+        .accordion-open .accordion-content {
+            grid-template-rows: 1fr;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        .custom-checkbox {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #3f3f46;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .custom-checkbox:checked {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .custom-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            left: 3px;
+            top: -2px;
+        }
+
+        .ingredient-item {
+            transition: all 0.2s;
+        }
+
+        .ingredient-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .temp-card-0 { border-left: 4px solid #f59e0b; }
+        .temp-card-1 { border-left: 4px solid #3b82f6; }
+        .temp-card-2 { border-left: 4px solid #06b6d4; }
+
+        .list-item-check:checked + span {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
+        /* Badge para los contadores */
+        .counter-badge {
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            padding: 2px 10px;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            font-weight: 800;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-12">
+    <div class="max-w-5xl mx-auto">
+        
+        <!-- Cabecera -->
+        <header class="text-center mb-16 space-y-4">
+            <div class="inline-block p-2 px-4 rounded-full glass text-xs font-bold tracking-widest uppercase text-indigo-400 mb-2 animate-pulse">
+                🛒 Shopping Assistant Pro
+            </div>
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight">
+                Planifica tu <span class="dynamic-title">Compra</span>
+            </h1>
+            <p class="text-gray-400 max-w-xl mx-auto text-lg">
+                Organiza tu menú semanal y genera una lista inteligente separada por pasillos y temperatura.
+            </p>
+        </header>
+
+        <!-- Contenido Principal -->
+        <div id="main-view" class="space-y-12">
+            <div id="menu-container" class="grid gap-12">
+                <!-- Secciones cargadas dinámicamente -->
+            </div>
+
+            <!-- Barra de Acción Flotante -->
+            <div class="sticky bottom-8 flex justify-center z-50">
+                <button onclick="generateFinalList()" class="btn-primary text-white font-bold py-5 px-12 rounded-2xl flex items-center gap-3 text-xl">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    Generar Lista Organizada
+                </button>
+            </div>
+        </div>
+
+        <!-- Vista de Resultados -->
+        <div id="result-view" class="hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <button onclick="backToMenu()" class="glass px-6 py-3 rounded-xl text-indigo-400 hover:text-white transition flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                    Ajustar Selección
+                </button>
+                <h2 class="text-3xl font-extrabold">Tu Ruta de Compra</h2>
+                <div class="flex gap-2">
+                    <span class="px-3 py-1 bg-amber-500/10 text-amber-500 rounded text-xs border border-amber-500/20">Ambiente</span>
+                    <span class="px-3 py-1 bg-blue-500/10 text-blue-500 rounded text-xs border border-blue-500/20">Nevera</span>
+                    <span class="px-3 py-1 bg-cyan-500/10 text-cyan-500 rounded text-xs border border-cyan-500/20">Hielo</span>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6 items-start">
+                <!-- Columna Ambiente -->
+                <div class="space-y-4">
+                    <div class="glass p-5 rounded-2xl temp-card-0 h-fit">
+                        <div class="flex items-center gap-3 mb-4 text-amber-500">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4c-1.1 0-2 .9-2 2v5c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM16 21v-4M8 21v-4M12 21v-4"/></svg>
+                            <h3 class="font-bold uppercase tracking-wider">Pasillo Seco</h3>
+                        </div>
+                        <ul id="list-ambiente" class="space-y-3"></ul>
+                    </div>
+                </div>
+
+                <!-- Columna Nevera -->
+                <div class="space-y-4">
+                    <div class="glass p-5 rounded-2xl temp-card-1 h-fit">
+                        <div class="flex items-center gap-3 mb-4 text-blue-500">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 14"/></svg>
+                            <h3 class="font-bold uppercase tracking-wider">Refrigerados</h3>
+                        </div>
+                        <ul id="list-nevera" class="space-y-3"></ul>
+                    </div>
+                </div>
+
+                <!-- Columna Congelador -->
+                <div class="space-y-4">
+                    <div class="glass p-5 rounded-2xl temp-card-2 h-fit">
+                        <div class="flex items-center gap-3 mb-4 text-cyan-400">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L9 5H5v4L2 12l3 3v4h4l3 3 3-3h4v-4l3-3-3-3V5h-4l-3-3z"/></svg>
+                            <h3 class="font-bold uppercase tracking-wider">Congelados</h3>
+                        </div>
+                        <ul id="list-congelador" class="space-y-3"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const data = {
+            "Desayuno": [
+                { name: "Colacao", ingredients: [{n: "Leche", t: 1}, {n: "Colacao", t: 0}, {n: "Azúcar", t: 0}, {n: "Miel", t: 0}] },
+                { name: "Bocadillo", ingredients: [{n: "Pan desayuno", t: 0}, {n: "Chacina", t: 1}] }
+            ],
+            "Comida": [
+                { name: "Costillas", ingredients: [{n: "Costillas", t: 1}] },
+                { name: "Albóndigas", ingredients: [{n: "Albóndigas", t: 1}, {n: "Cebolla", t: 0}] },
+                { name: "Pollo empanado", ingredients: [{n: "Pollo empanado", t: 1}] },
+                { name: "Pasta 1", ingredients: [{n: "Tortellini", t: 1}] },
+                { name: "Pasta 2", ingredients: [{n: "Espaguetis", t: 0}] },
+                { name: "Lasaña", ingredients: [{n: "Lasaña", t: 1}] },
+                { name: "Noodles", ingredients: [{n: "Noodles", t: 0}, {n: "Pollo", t: 1}, {n: "Huevo", t: 1}, {n: "Soja", t: 0}, {n: "Teriyaki", t: 0}] },
+                { name: "Garbanzos", ingredients: [{n: "Garbanzos", t: 0}] }
+            ],
+            "Cena": [
+                { 
+                    name: "Burrito", 
+                    ingredients: [
+                        {n: "Tortitas de trigo", t: 0}, {n: "Carne picada", t: 1}, {n: "Bacon", t: 1}, 
+                        {n: "Panceta de cerdo", t: 1}, {n: "Queso crema", t: 1}, {n: "Cebolla", t: 0}, 
+                        {n: "Tomate frito", t: 0}, {n: "Salsa brava", t: 1}, {n: "Orégano en polvo", t: 0}, {n: "Paprica", t: 0}
+                    ] 
+                },
+                { name: "Hamburguesa", ingredients: [{n: "Pan de hamburguesa", t: 0}, {n: "Hamburguesa", t: 1}, {n: "Bacón", t: 1}, {n: "Cebolla crispy", t: 0}] },
+                { name: "Perrito caliente", ingredients: [{n: "Pan de perrito", t: 0}, {n: "Salchichas", t: 1}] },
+                { name: "Pizza", ingredients: [{n: "Pizza", t: 1}] },
+                { name: "Montaditos", ingredients: [{n: "Panes de montadito", t: 0}, {n: "Carne de los montaditos", t: 1}] },
+                { name: "Fajitas", ingredients: [{n: "Tortitas de trigo", t: 0}, {n: "Carne picada", t: 1}] },
+                { name: "Sandwich", ingredients: [{n: "Jamón York", t: 1}, {n: "Queso en loncha", t: 1}] },
+                { name: "Fingers", ingredients: [{n: "Palitos de pescado", t: 2}] },
+                { name: "Puchero", ingredients: [{n: "Estrellitas", t: 0}, {n: "Caldo de puchero", t: 0}] }
+            ],
+            "Bebidas": [
+                { name: "Agua Mineral", ingredients: [{n: "Agua", t: 0}] },
+                { name: "Refrescos", ingredients: [{n: "Coca-Cola", t: 1}, {n: "Fanta", t: 1}] }
+            ],
+            "Lácteos": [
+                { name: "Surtido de Quesos", ingredients: [{n: "Queso en loncha", t: 1}, {n: "Queso en polvo", t: 1}, {n: "Queso rayado", t: 1}, {n: "Queso crema", t: 1}] }
+            ],
+            "Complementos": [
+                { name: "Acompañamiento", ingredients: [{n: "Pan de ajo", t: 1}, {n: "Patatas congeladas", t: 2}] },
+                { name: "Salsas", ingredients: [{n: "Ketchup", t: 1}, {n: "Mayonesa", t: 1}, {n: "Salsa Carbonara", t: 1}] }
+            ],
+            "Despensa": [
+                { name: "Aceite", ingredients: [{n: "Aceite de oliva", t: 0}] },
+                { name: "Snacks", ingredients: [{n: "Cacahuetes", t: 0}] }
+            ],
+            "Limpieza": [
+                { name: "Cocina", ingredients: [{n: "Fairy", t: 0}, {n: "Bolsas de basura", t: 0}] },
+                { name: "Lavandería", ingredients: [{n: "Detergente", t: 0}, {n: "Suavizante", t: 0}] },
+                { name: "Baño", ingredients: [{n: "Ambientador", t: 0}, {n: "Toallitas", t: 0}] }
+            ]
+        };
+
+        function init() {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+            
+            for (const [category, items] of Object.entries(data)) {
+                const section = document.createElement('div');
+                const safeCategory = category.replace(/\s/g, '');
+                
+                const showCounter = (category === "Comida" || category === "Cena");
+                
+                section.innerHTML = `
+                    <div class="flex items-center gap-4 mb-6">
+                        <h2 class="text-2xl font-extrabold tracking-tight">${category}</h2>
+                        ${showCounter ? `<span id="counter-${safeCategory}" class="counter-badge">0 seleccionados</span>` : ''}
+                        <div class="h-px bg-white/10 flex-grow"></div>
+                    </div>
+                    <div class="meal-grid" id="cat-${safeCategory}"></div>
+                `;
+                container.appendChild(section);
+                
+                const grid = document.getElementById(`cat-${safeCategory}`);
+                
+                items.forEach((item, idx) => {
+                    const itemId = `item-${safeCategory}-${idx}`;
+                    const card = document.createElement('div');
+                    card.className = 'meal-card rounded-2xl overflow-hidden relative group';
+                    card.id = `card-${itemId}`;
+                    
+                    card.innerHTML = `
+                        <div class="p-5 flex flex-col cursor-pointer" onclick="toggleAccordion('${itemId}')">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" id="check-${itemId}" class="custom-checkbox item-main-check" 
+                                           data-category="${safeCategory}"
+                                           onclick="handleItemCheck(event, '${itemId}')">
+                                    <span class="font-bold text-lg text-white/90 group-hover:text-white">${item.name}</span>
+                                </div>
+                                <div id="icon-${itemId}" class="text-gray-500 transition-transform">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-500 italic pl-8">
+                                ${item.ingredients.length} artículos
+                            </div>
+                        </div>
+                        <div class="accordion-content" id="content-${itemId}">
+                            <div class="overflow-hidden">
+                                <div class="px-8 pb-4 space-y-1">
+                                    <div class="h-px bg-white/5 mb-3"></div>
+                                    ${item.ingredients.map((ing, i) => `
+                                        <label class="ingredient-item flex items-center justify-between p-2 rounded-lg cursor-pointer">
+                                            <div class="flex items-center gap-3">
+                                                <input type="checkbox" class="ing-check-${itemId} custom-checkbox scale-75" 
+                                                       data-name="${ing.n}" data-temp="${ing.t}"
+                                                       onclick="event.stopPropagation()">
+                                                <span class="text-sm text-gray-400">${ing.n}</span>
+                                            </div>
+                                            <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded ${getTempStyle(ing.t)}">
+                                                ${getTempLabel(ing.t)}
+                                            </span>
+                                        </label>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        function getTempStyle(t) {
+            if (t === 0) return 'bg-amber-500/10 text-amber-500 border border-amber-500/20';
+            if (t === 1) return 'bg-blue-500/10 text-blue-500 border border-blue-500/20';
+            return 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20';
+        }
+
+        function getTempLabel(t) {
+            return t === 0 ? 'Ambiente' : t === 1 ? 'Nevera' : 'Hielo';
+        }
+
+        function toggleAccordion(id) {
+            const card = document.getElementById(`card-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            const isOpen = card.classList.contains('accordion-open');
+            
+            if(isOpen) {
+                card.classList.remove('accordion-open');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                card.classList.add('accordion-open');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        function updateCategoryCounters() {
+            const categories = ["Comida", "Cena"];
+            categories.forEach(cat => {
+                const count = document.querySelectorAll(`.item-main-check[data-category='${cat}']:checked`).length;
+                const counterElement = document.getElementById(`counter-${cat}`);
+                if (counterElement) {
+                    counterElement.innerText = `${count} ${count === 1 ? 'día seleccionado' : 'días seleccionados'}`;
+                    counterElement.classList.add('animate-pulse');
+                    setTimeout(() => counterElement.classList.remove('animate-pulse'), 500);
+                }
+            });
+        }
+
+        function handleItemCheck(event, itemId) {
+            event.stopPropagation();
+            const isChecked = event.target.checked;
+            const card = document.getElementById(`card-${itemId}`);
+            const ingChecks = document.querySelectorAll(`.ing-check-${itemId}`);
+            
+            if (isChecked) card.classList.add('selected');
+            else card.classList.remove('selected');
+
+            ingChecks.forEach(check => {
+                check.checked = isChecked;
+            });
+
+            if (isChecked && !card.classList.contains('accordion-open')) {
+                toggleAccordion(itemId);
+            }
+            
+            updateCategoryCounters();
+        }
+
+        function generateFinalList() {
+            const allChecks = document.querySelectorAll('input[data-name]:checked');
+            const uniqueIngredients = new Map();
+
+            allChecks.forEach(check => {
+                const name = check.dataset.name;
+                const temp = parseInt(check.dataset.temp);
+                if (!uniqueIngredients.has(name)) {
+                    uniqueIngredients.set(name, temp);
+                }
+            });
+
+            if (uniqueIngredients.size === 0) {
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-10 left-1/2 -translate-x-1/2 glass p-4 px-8 rounded-full text-white font-bold animate-bounce z-[100]';
+                toast.innerText = '⚠️ Selecciona algo primero';
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2000);
+                return;
+            }
+
+            renderResult(uniqueIngredients);
+            document.getElementById('main-view').classList.add('hidden');
+            document.getElementById('result-view').classList.remove('hidden');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function renderResult(ingredientsMap) {
+            const containers = {
+                0: document.getElementById('list-ambiente'),
+                1: document.getElementById('list-nevera'),
+                2: document.getElementById('list-congelador')
+            };
+
+            Object.values(containers).forEach(c => c.innerHTML = '');
+
+            const sortedIngs = Array.from(ingredientsMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+
+            sortedIngs.forEach(([name, temp]) => {
+                const li = document.createElement('li');
+                li.className = 'group flex items-center gap-4 p-4 glass rounded-xl border-l-2 border-transparent hover:border-indigo-500 transition-all';
+                li.innerHTML = `
+                    <input type="checkbox" class="list-item-check custom-checkbox">
+                    <span class="text-lg font-medium">${name}</span>
+                `;
+                containers[temp].appendChild(li);
+            });
+        }
+
+        function backToMenu() {
+            document.getElementById('main-view').classList.remove('hidden');
+            document.getElementById('result-view').classList.add('hidden');
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
