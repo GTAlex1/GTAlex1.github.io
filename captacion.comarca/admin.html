@@ -421,8 +421,23 @@
                 const id = (matchFile && matchFile[1]) || (matchQuery && matchQuery[1]);
                 
                 if (id) {
-                    // Retorna el link directo que sí entiende la etiqueta <img>
-                    return `https://drive.google.com/uc?export=view&id=${id}`;
+                    // FUNCIÓN INTERNA: Convierte el enlace de visor de Drive a enlace de imagen directa (vía Thumbnail)
+                    function convertirEnlaceDrive(url) {
+                        if (!url) return "";
+                        if (url.includes("drive.google.com")) {
+                            const matchFile = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                            const matchQuery = url.match(/[?&]id=([a-zA-Z0-9-_]+)/);
+                            
+                            const id = (matchFile && matchFile[1]) || (matchQuery && matchQuery[1]);
+                            
+                            if (id) {
+                                // CAMBIO AQUÍ: Usamos el endpoint de thumbnail con un tamaño máximo de 500px
+                                // Este endpoint es mucho más permisivo con los dominios educativos
+                                return `https://drive.google.com/thumbnail?id=${id}&sz=w500`;
+                }
+            }
+            return url;
+        }
                 }
             }
             return url; // Si no es de Drive, lo devuelve tal cual
