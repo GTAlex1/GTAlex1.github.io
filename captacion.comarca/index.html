@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Captaciones SÉNIOR - Comarca de Jerez</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .form-container {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        /* Aplicamos la nueva tipografía de estilo gaming/moderno al título */
+        h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+            color: #4CAF50; /* Verde acento */
+            margin-bottom: 25px;
+            line-height: 1.2;
+        }
+        h2 span {
+            font-weight: 400;
+            letter-spacing: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #2a2a2a;
+            color: #fff;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+        .row .form-group {
+            flex: 1;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h2>Comarca de Jerez<br><span style="color: #aaa; font-size: 0.55em;">Captaciones Sénior</span></h2>
+    <form id="captacionForm">
+        
+        <div class="form-group">
+            <label for="nombre">Nombre completo *</label>
+            <input type="text" id="nombre" required>
+        </div>
+
+        <div class="form-group">
+            <label for="telefono">Teléfono de contacto *</label>
+            <input type="tel" id="telefono" required>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label for="edad">Edad *</label>
+                <input type="number" id="edad" min="16" required>
+            </div>
+            <div class="form-group">
+                <label for="pierna">Pierna dominante *</label>
+                <select id="pierna" required>
+                    <option value="">Selecciona...</option>
+                    <option value="Diestro">Diestro</option>
+                    <option value="Zurdo">Zurdo</option>
+                    <option value="Ambidiestro">Ambidiestro</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group">
+                <label for="altura">Altura (cm) *</label>
+                <input type="number" id="altura" required>
+            </div>
+            <div class="form-group">
+                <label for="peso">Peso (kg) *</label>
+                <input type="number" id="peso" step="0.1" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="posicion">Posición principal *</label>
+            <select id="posicion" required>
+                <option value="">Selecciona tu posición...</option>
+                <option value="Portero">Portero</option>
+                <option value="Central">Central</option>
+                <option value="Lateral">Lateral</option>
+                <option value="Pivote">Pivote</option>
+                <option value="Medio centro">Medio centro</option>
+                <option value="Media punta">Media punta</option>
+                <option value="Extremo">Extremo</option>
+                <option value="Delantero">Delantero</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="equipo_anterior">Último equipo en el que jugaste</label>
+            <input type="text" id="equipo_anterior" placeholder="Ej: CD Guadalcacín">
+        </div>
+
+        <div class="form-group">
+            <label for="foto">Foto de cara (Opcional)</label>
+            <input type="file" id="foto" accept="image/*">
+        </div>
+
+        <div class="form-group">
+            <label for="notas">Observaciones (Opcional)</label>
+            <textarea id="notas" rows="3" placeholder="¿Algo que el míster deba saber?"></textarea>
+        </div>
+
+        <button type="submit" id="btnEnviar">Enviar mis datos</button>
+    </form>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // REEMPLAZA CON TUS CREDENCIALES DE FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyCtGIdiB6TX4tmSJDypRKpBA3QYEW6BpyU",
+        authDomain: "captacion-comarca.firebaseapp.com",
+        projectId: "captacion-comarca",
+        storageBucket: "captacion-comarca.firebasestorage.app",
+        messagingSenderId: "566356053681",
+        appId: "1:566356053681:web:3c525086a5587b0484dc90"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // REEMPLAZA CON LA URL QUE TE DIO GOOGLE APPS SCRIPT
+    const GOOGLE_SCRIPT_URL = "TU_URL_DE_GOOGLE_APPS_SCRIPT";
+
+    document.getElementById('captacionForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const btn = document.getElementById('btnEnviar');
+        btn.disabled = true;
+        btn.innerText = "Enviando...";
+
+        const fotoFile = document.getElementById('foto').files[0];
+        let fotoUrl = ""; 
+
+        try {
+            if (fotoFile) {
+                const base64Data = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(fotoFile);
+                });
+
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    body: JSON.stringify({
+                        base64: base64Data,
+                        mimeType: fotoFile.type,
+                        filename: `${Date.now()}_${fotoFile.name}`
+                    })
+                });
+
+                const result = await response.json();
+                if (result.status === "success") {
+                    fotoUrl = result.url;
+                } else {
+                    console.error("Error en Drive Script:", result.message);
+                }
+            }
+
+            await addDoc(collection(db, "jugadores"), {
+                nombre: document.getElementById('nombre').value,
+                telefono: document.getElementById('telefono').value,
+                edad: parseInt(document.getElementById('edad').value),
+                pierna: document.getElementById('pierna').value,
+                altura: parseInt(document.getElementById('altura').value),
+                peso: parseFloat(document.getElementById('peso').value),
+                posicion: document.getElementById('posicion').value,
+                equipo_anterior: document.getElementById('equipo_anterior').value,
+                foto: fotoUrl, 
+                notas: document.getElementById('notas').value,
+                fechaRegistro: serverTimestamp()
+            });
+
+            alert("¡Datos enviados correctamente! Mucha suerte en las pruebas.");
+            document.getElementById('captacionForm').reset();
+
+        } catch (error) {
+            console.error("Error en el proceso: ", error);
+            alert("Hubo un problema al enviar el formulario. Inténtalo de nuevo.");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Enviar mis datos";
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Captaciones - Comarca de Jerez</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .header-panel {
+            max-width: 800px;
+            margin: 0 auto 30px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            color: #4CAF50;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .btn-logout {
+            padding: 8px 15px;
+            background-color: #cf4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .jugador-card {
+            background-color: #1e1e1e;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            border-left: 4px solid #4CAF50;
+        }
+        .jugador-card:hover {
+            transform: translateX(5px);
+            background-color: #252525;
+        }
+        .jugador-nombre {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+        .jugador-posicion {
+            background-color: #2a2a2a;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        /* Estilos del Modal (Perfil Completo) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.7);
+        }
+        .close-modal {
+            position: absolute;
+            top: 15px; right: 20px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #aaa;
+        }
+        .close-modal:hover { color: #fff; }
+        
+        .profile-header {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+        .profile-img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #333;
+            border: 2px solid #4CAF50;
+        }
+        .profile-title h3 {
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.4em;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .info-item {
+            font-size: 0.95em;
+        }
+        .info-item strong {
+            color: #4CAF50;
+            display: block;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .info-full {
+            grid-column: span 2;
+            background-color: #262626;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-panel">
+    <h2>Panel de Captaciones</h2>
+    <button class="btn-logout" id="btnLogout">Salir</button>
+</div>
+
+<div class="container" id="listaJugadores">
+    <p style="text-align: center; color: #888;">Cargando aspirantes...</p>
+</div>
+
+<!-- Ventana de Perfil Detallado (Modal) -->
+<div class="modal" id="perfilModal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeModal">&times;</span>
+        <div class="profile-header">
+            <img src="" alt="Foto Jugador" class="profile-img" id="pFoto" onerror="this.src='https://via.placeholder.com/150?text=Sin+Foto'">
+            <div class="profile-title">
+                <h3 id="pNombre">Nombre Completo</h3>
+                <span class="jugador-posicion" id="pPosicion">Posición</span>
+            </div>
+        </div>
+        <div class="profile-grid">
+            <div class="info-item"><strong>Teléfono</strong><span id="pTelefono"></span></div>
+            <div class="info-item"><strong>Edad</strong><span id="pEdad"></span> años</div>
+            <div class="info-item"><strong>Pierna Dominante</strong><span id="pPierna"></span></div>
+            <div class="info-item"><strong>Físico</strong><span id="pFisico"></span></div>
+            <div class="info-item class-full" style="grid-column: span 2;"><strong>Último Equipo</strong><span id="pEquipo"></span></div>
+            <div class="info-item info-full"><strong>Observaciones del Jugador</strong><p id="pNotas" style="margin: 5px 0 0 0; font-size: 0.9em; color: #ccc;"></p></div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // REEMPLAZA CON TUS CREDENCIALES DE FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyCtGIdiB6TX4tmSJDypRKpBA3QYEW6BpyU",
+        authDomain: "captacion-comarca.firebaseapp.com",
+        projectId: "captacion-comarca",
+        storageBucket: "captacion-comarca.firebasestorage.app",
+        messagingSenderId: "566356053681",
+        appId: "1:566356053681:web:3c525086a5587b0484dc90"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // 1. Proteger la página: Verificar si el míster está logueado
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            // Si no está logueado, patada hacia el login
+            window.location.href = 'login.html';
+        } else {
+            // Si está logueado, cargamos los datos de Firestore
+            cargarJugadores();
+        }
+    });
+
+    // 2. Función para leer los jugadores de la base de datos
+    async function cargarJugadores() {
+        const listaContenedor = document.getElementById('listaJugadores');
+        try {
+            // Hacemos la consulta ordenada por fecha de registro (los más nuevos primero)
+            const q = query(collection(db, "jugadores"), orderBy("fechaRegistro", "desc"));
+            const querySnapshot = await getDocs(q);
+            
+            if(querySnapshot.empty) {
+                listaContenedor.innerHTML = '<p style="text-align: center; color: #888;">Aún no se ha apuntado ningún jugador.</p>';
+                return;
+            }
+
+            listaContenedor.innerHTML = ''; // Limpiamos el texto de carga
+
+            querySnapshot.forEach((doc) => {
+                const jugador = doc.data();
+                
+                // Creamos la tarjeta visual con Nombre y Posición
+                const card = document.createElement('div');
+                card.className = 'jugador-card';
+                card.innerHTML = `
+                    <span class="jugador-nombre">${jugador.nombre}</span>
+                    <span class="jugador-posicion">${jugador.posicion}</span>
+                `;
+                
+                // Al hacer clic en la tarjeta, abrimos el modal pasándole los datos completos
+                card.addEventListener('click', () => abrirPerfil(jugador));
+                listaContenedor.appendChild(card);
+            });
+
+        } catch (error) {
+            console.error("Error al cargar jugadores: ", error);
+            listaContenedor.innerHTML = '<p style="text-align: center; color: #ff4a4a;">Error al cargar los datos. Revisa las reglas de Firestore.</p>';
+        }
+    }
+
+    // 3. Función para rellenar y mostrar el modal del perfil
+    function abrirPerfil(jugador) {
+        document.getElementById('pNombre').innerText = jugador.nombre;
+        document.getElementById('pPosicion').innerText = jugador.posicion;
+        document.getElementById('pTelefono').innerText = jugador.telefono;
+        document.getElementById('pEdad').innerText = jugador.edad;
+        document.getElementById('pPierna').innerText = jugador.pierna;
+        document.getElementById('pAnterior');
+        document.getElementById('pFisico').innerText = `${jugador.altura} cm / ${jugador.peso} kg`;
+        document.getElementById('pEquipo').innerText = jugador.equipo_anterior || "Ninguno / Agente libre";
+        document.getElementById('pNotas').innerText = jugador.notas || "Sin observaciones adicionales.";
+        
+        // Manejo de la foto de Google Drive
+        const imgElement = document.getElementById('pFoto');
+        if (jugador.foto) {
+            imgElement.src = jugador.foto;
+        } else {
+            imgElement.src = 'https://via.placeholder.com/150?text=Sin+Foto';
+        }
+
+        document.getElementById('perfilModal').style.display = 'flex';
+    }
+
+    // Cerrar el modal al darle a la X
+    document.getElementById('closeModal').addEventListener('click', () => {
+        document.getElementById('perfilModal').style.display = 'none';
+    });
+
+    // Cerrar sesión
+    document.getElementById('btnLogout').addEventListener('click', () => {
+        signOut(auth).then(() => {
+            window.location.href = 'login.html';
+        });
+    });
+</script>
+</body>
+</html>

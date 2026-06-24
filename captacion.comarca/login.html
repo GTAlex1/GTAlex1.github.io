@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Míster - Comarca de Jerez</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 360px;
+        }
+        h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            text-transform: uppercase;
+            text-align: center;
+            color: #4CAF50;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #2a2a2a;
+            color: #fff;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error-msg {
+            color: #ff4a4a;
+            font-size: 0.9em;
+            text-align: center;
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <h2>Área Técnica</h2>
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="email">Correo del Míster</label>
+            <input type="email" id="email" required placeholder="ejemplo@comarcadejerez.com">
+        </div>
+        <div class="form-group">
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" required placeholder="••••••••">
+        </div>
+        <button type="submit">Iniciar Sesión</button>
+        <div class="error-msg" id="errorMsg">Usuario o contraseña incorrectos.</div>
+    </form>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    // REEMPLAZA CON TUS CREDENCIALES DE FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyCtGIdiB6TX4tmSJDypRKpBA3QYEW6BpyU",
+        authDomain: "captacion-comarca.firebaseapp.com",
+        projectId: "captacion-comarca",
+        storageBucket: "captacion-comarca.firebasestorage.app",
+        messagingSenderId: "566356053681",
+        appId: "1:566356053681:web:3c525086a5587b0484dc90"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const errorMsg = document.getElementById('errorMsg');
+
+        try {
+            errorMsg.style.display = 'none';
+            // Validamos contra Firebase Auth
+            await signInWithEmailAndPassword(auth, email, password);
+            // Si es correcto, redirigimos al panel
+            window.location.href = 'admin.html';
+        } catch (error) {
+            console.error(error);
+            errorMsg.style.display = 'block';
+        }
+    });
+</script>
+</body>
+</html>
