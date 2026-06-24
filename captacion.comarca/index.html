@@ -178,7 +178,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // REEMPLAZA CON TUS CREDENCIALES DE FIREBASE
     const firebaseConfig = {
@@ -255,18 +255,37 @@
             }
         }
 
-        // 2. REGISTRO EN FIREBASE
+        // 2. REGISTRO EN FIREBASE (Con ID personalizado: nombre-apellidos-telefono)
         try {
-            await addDoc(collection(db, "jugadores"), {
-                nombre: document.getElementById('nombre').value,
-                telefono: document.getElementById('telefono').value,
+            const nombreValor = document.getElementById('nombre').value;
+            const telefonoValor = document.getElementById('telefono').value;
+
+            // 1. Limpiamos el nombre: minúsculas, sin acentos y espacios por guiones
+            const nombreLimpio = nombreValor
+                .toLowerCase()
+                .trim()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "") // Quita acentos (á -> a, ó -> o)
+                .replace(/[^a-z0-9\s-]/g, "")    // Quita caracteres raros o emojis
+                .replace(/\s+/g, "-");           // Cambia espacios por guiones
+
+            // 2. Limpiamos el teléfono (dejamos solo los números por si ponen espacios o +34)
+            const telefonoLimpio = telefonoValor.replace(/[^0-9]/g, "");
+
+            // 3. Juntamos todo para crear el ID único del documento
+            const idPersonalizado = `${nombreLimpio}-${telefonoLimpio}`;
+
+            // Guardamos usando setDoc y doc para elegir nosotros el ID en la colección "jugadores"
+            await setDoc(doc(db, "jugadores", idPersonalizado), {
+                nombre: nombreValor,
+                telefono: telefonoValor,
                 edad: parseInt(document.getElementById('edad').value),
                 pierna: document.getElementById('pierna').value,
                 altura: parseInt(document.getElementById('altura').value),
                 peso: parseFloat(document.getElementById('peso').value),
                 posicion: document.getElementById('posicion').value,
                 equipo_anterior: document.getElementById('equipo_anterior').value,
-                foto: fotoUrl, // Aquí irá la URL (si milagrosamente funciona) o el texto con el nombre del archivo
+                foto: fotoUrl, 
                 notas: document.getElementById('notas').value,
                 fechaRegistro: serverTimestamp()
             });
@@ -281,7 +300,6 @@
             btn.disabled = false;
             btn.innerText = "Enviar mis datos";
         }
-    });
 </script>
 </body>
 </html>
