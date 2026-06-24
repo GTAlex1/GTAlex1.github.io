@@ -186,7 +186,7 @@
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
     import { getFirestore, collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // REEMPLAZA CON TUS CREDENCIALES DE FIREBASE
+    // CONFIGURACIÓN DE FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyCtGIdiB6TX4tmSJDypRKpBA3QYEW6BpyU",
         authDomain: "captacion-comarca.firebaseapp.com",
@@ -196,40 +196,46 @@
         appId: "1:566356053681:web:3c525086a5587b0484dc90"
     };
 
+    console.log("1. Inicializando Firebase...");
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // 1. Proteger la página: Verificar si el míster está logueado
+    // 1. Verificar estado de autenticación
+    console.log("2. Escuchando estado de autenticación (onAuthStateChanged)...");
     onAuthStateChanged(auth, (user) => {
         if (!user) {
-            // Si no está logueado, patada hacia el login
+            console.warn("Mister no logueado. Redirigiendo a login.html");
             window.location.href = 'login.html';
         } else {
-            // Si está logueado, cargamos los datos de Firestore
+            console.log("3. Mister autenticado correctamente:", user.email);
             cargarJugadores();
         }
     });
 
-    // 2. Función para leer los jugadores de la base de datos
+    // 2. Función para leer los jugadores de Firestore
     async function cargarJugadores() {
         const listaContenedor = document.getElementById('listaJugadores');
+        console.log("4. Iniciando consulta a Firestore...");
+        
         try {
-            // Hacemos la consulta ordenada por fecha de registro (los más nuevos primero)
             const q = query(collection(db, "jugadores"), orderBy("fechaRegistro", "desc"));
-            const querySnapshot = await getDocs(q);
+            
+            console.log("5. Ejecutando getDocs(). Apuntando al servidor...");
+            const querySnapshot = await getDocs(q); 
+            console.log("6. ¡Respuesta de Firestore recibida con éxito!");
             
             if(querySnapshot.empty) {
+                console.log("El snapshot está vacío. No hay jugadores.");
                 listaContenedor.innerHTML = '<p style="text-align: center; color: #888;">Aún no se ha apuntado ningún jugador.</p>';
                 return;
             }
 
-            listaContenedor.innerHTML = ''; // Limpiamos el texto de carga
+            listaContenedor.innerHTML = ''; // Limpiar texto de carga
 
             querySnapshot.forEach((doc) => {
                 const jugador = doc.data();
                 
-                // Creamos la tarjeta visual con Nombre y Posición
                 const card = document.createElement('div');
                 card.className = 'jugador-card';
                 card.innerHTML = `
@@ -237,14 +243,14 @@
                     <span class="jugador-posicion">${jugador.posicion}</span>
                 `;
                 
-                // Al hacer clic en la tarjeta, abrimos el modal pasándole los datos completos
                 card.addEventListener('click', () => abrirPerfil(jugador));
                 listaContenedor.appendChild(card);
             });
+            console.log(`7. Se han renderizado ${querySnapshot.size} tarjetas de jugadores.`);
 
         } catch (error) {
-            console.error("Error al cargar jugadores: ", error);
-            listaContenedor.innerHTML = '<p style="text-align: center; color: #ff4a4a;">Error al cargar los datos. Revisa las reglas de Firestore.</p>';
+            console.error("❌ Error crítico en cargarJugadores: ", error);
+            listaContenedor.innerHTML = '<p style="text-align: center; color: #ff4a4a;">Error al cargar los datos. Revisa las reglas de Firestore o la consola.</p>';
         }
     }
 
@@ -255,12 +261,10 @@
         document.getElementById('pTelefono').innerText = jugador.telefono;
         document.getElementById('pEdad').innerText = jugador.edad;
         document.getElementById('pPierna').innerText = jugador.pierna;
-        document.getElementById('pAnterior');
-        document.getElementById('pFisico').innerText = `${jugador.altura} cm / ${jugador.peso} kg`;
+        document.getElementById('pFisico').innerText = `${jugador.altura || '--'} cm / ${jugador.peso || '--'} kg`;
         document.getElementById('pEquipo').innerText = jugador.equipo_anterior || "Ninguno / Agente libre";
         document.getElementById('pNotas').innerText = jugador.notas || "Sin observaciones adicionales.";
         
-        // Manejo de la foto de Google Drive
         const imgElement = document.getElementById('pFoto');
         if (jugador.foto) {
             imgElement.src = jugador.foto;
@@ -271,7 +275,7 @@
         document.getElementById('perfilModal').style.display = 'flex';
     }
 
-    // Cerrar el modal al darle a la X
+    // Cerrar el modal
     document.getElementById('closeModal').addEventListener('click', () => {
         document.getElementById('perfilModal').style.display = 'none';
     });
