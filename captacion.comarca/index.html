@@ -205,51 +205,55 @@
 
         const fotoFile = document.getElementById('foto').files[0];
         let fotoUrl = ""; 
+        let nombreArchivoDrive = ""; // Aquí guardaremos el nombre de respaldo
 
-        // 1. CONTROL DE LA FOTO (Versión Ultra Blindada)
-if (fotoFile) {
-    try {
-        const base64Data = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
-            reader.readAsDataURL(fotoFile);
-        });
+        // 1. CONTROL DE LA FOTO (Plan B para cuenta educativa)
+        if (fotoFile) {
+            try {
+                // Creamos el nombre único aquí para tenerlo controlado
+                nombreArchivoDrive = `${Date.now()}_${fotoFile.name}`;
 
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'cors',
-            body: JSON.stringify({
-                base64: base64Data,
-                mimeType: fotoFile.type,
-                filename: `${Date.now()}_${fotoFile.name}`
-            })
-        });
+                const base64Data = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                    reader.readAsDataURL(fotoFile);
+                });
 
-        const responseText = await response.text();
-        
-        // Buscamos cualquier URL que empiece por http dentro de la respuesta de Google
-        const urlMatch = responseText.match(/https?:\/\/[^\s"']+/);
-        
-        if (urlMatch) {
-            let rawUrl = urlMatch[0];
-            
-            // CONVERSIÓN DE GOOGLE DRIVE: Si es un enlace normal de Drive, lo convertimos a link directo de imagen
-            const driveIdMatch = rawUrl.match(/\/d\/([^/]+)/);
-            if (driveIdMatch && driveIdMatch[1]) {
-                fotoUrl = `https://lh3.googleusercontent.com/d/${driveIdMatch[1]}`;
-            } else {
-                fotoUrl = rawUrl; // Si no es de Drive, dejamos la URL tal cual
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    body: JSON.stringify({
+                        base64: base64Data,
+                        mimeType: fotoFile.type,
+                        filename: nombreArchivoDrive // Usamos nuestro nombre único
+                    })
+                });
+
+                const responseText = await response.text();
+                
+                // Intentamos cazar la URL por si acaso algún día Google se vuelve bueno
+                const urlMatch = responseText.match(/https?:\/\/[^\s"']+/);
+                if (urlMatch) {
+                    let rawUrl = urlMatch[0];
+                    const driveIdMatch = rawUrl.match(/\/d\/([^/]+)/);
+                    if (driveIdMatch && driveIdMatch[1]) {
+                        fotoUrl = `https://lh3.googleusercontent.com/d/${driveIdMatch[1]}`;
+                    } else {
+                        fotoUrl = rawUrl;
+                    }
+                }
+
+            } catch (fotoError) {
+                console.error("Error en la subida, pero la foto suele llegar igual:", fotoError);
             }
-            console.log("URL de foto procesada para Firebase:", fotoUrl);
-        } else {
-            console.error("No se encontró ninguna URL en la respuesta de Google:", responseText);
+
+            // [EL TRUCO DEL PLAN B] 
+            // Si la foto se ha procesado pero 'fotoUrl' se ha quedado vacía "" por el bloqueo,
+            // le metemos el nombre del archivo para que el míster sepa cuál es.
+            if (!fotoUrl && nombreArchivoDrive) {
+                fotoUrl = `📁 Buscar en Drive: ${nombreArchivoDrive}`;
+            }
         }
-
-    } catch (fotoError) {
-        console.error("Error al subir la foto a Drive:", fotoError);
-    }
-}
-
 
         // 2. REGISTRO EN FIREBASE
         try {
@@ -262,7 +266,7 @@ if (fotoFile) {
                 peso: parseFloat(document.getElementById('peso').value),
                 posicion: document.getElementById('posicion').value,
                 equipo_anterior: document.getElementById('equipo_anterior').value,
-                foto: fotoUrl, 
+                foto: fotoUrl, // Aquí irá la URL (si milagrosamente funciona) o el texto con el nombre del archivo
                 notas: document.getElementById('notas').value,
                 fechaRegistro: serverTimestamp()
             });
@@ -279,6 +283,5 @@ if (fotoFile) {
         }
     });
 </script>
-
 </body>
 </html>
