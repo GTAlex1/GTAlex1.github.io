@@ -30,14 +30,13 @@
             max-width: 500px;
         }
         
-        /* Aplicamos la nueva tipografía de estilo gaming/moderno al título */
         h2 {
             font-family: 'Montserrat', sans-serif;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1px;
             text-align: center;
-            color: #4CAF50; /* Verde acento */
+            color: #4CAF50;
             margin-bottom: 25px;
             line-height: 1.2;
         }
@@ -207,8 +206,9 @@
         const fotoFile = document.getElementById('foto').files[0];
         let fotoUrl = ""; 
 
-        try {
-            if (fotoFile) {
+        // 1. CONTROL DE LA FOTO (Aislado para evitar bloqueos)
+        if (fotoFile) {
+            try {
                 const base64Data = await new Promise((resolve) => {
                     const reader = new FileReader();
                     reader.onloadend = () => resolve(reader.result.split(',')[1]);
@@ -225,14 +225,35 @@
                     })
                 });
 
-                const result = await response.json();
-                if (result.status === "success") {
-                    fotoUrl = result.url;
-                } else {
-                    console.error("Error en Drive Script:", result.message);
+                // Leemos la respuesta como texto primero para blindar el flujo
+                const responseText = await response.text();
+                
+                try {
+                    // Si el script responde con un objeto JSON estructurado
+                    const result = JSON.parse(responseText);
+                    if (result.status === "success" && result.url) {
+                        fotoUrl = result.url;
+                    } else if (result.url) {
+                        fotoUrl = result.url;
+                    } else {
+                        fotoUrl = responseText.includes("http") ? responseText : "";
+                    }
+                } catch (jsonError) {
+                    // Si no es un JSON válido, asumimos que devolvió la URL directamente en texto plano
+                    if (responseText.trim().startsWith("http")) {
+                        fotoUrl = responseText.trim();
+                    } else {
+                        console.error("La respuesta no parece contener una URL válida:", responseText);
+                    }
                 }
-            }
 
+            } catch (fotoError) {
+                console.error("Error al subir la foto a Drive. Se procederá a guardar el resto de datos:", fotoError);
+            }
+        }
+
+        // 2. REGISTRO EN FIREBASE
+        try {
             await addDoc(collection(db, "jugadores"), {
                 nombre: document.getElementById('nombre').value,
                 telefono: document.getElementById('telefono').value,
@@ -251,7 +272,7 @@
             document.getElementById('captacionForm').reset();
 
         } catch (error) {
-            console.error("Error en el proceso: ", error);
+            console.error("Error al guardar en Firebase: ", error);
             alert("Hubo un problema al enviar el formulario. Inténtalo de nuevo.");
         } finally {
             btn.disabled = false;
