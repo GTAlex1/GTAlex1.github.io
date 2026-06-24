@@ -168,7 +168,7 @@
         </div>
 
         <div class="form-group">
-            <label for="notas">Observaciones (Opcional)</label>
+            <label for="notes">Observaciones (Opcional)</label>
             <textarea id="notas" rows="3" placeholder="¿Algo que el míster deba saber?"></textarea>
         </div>
 
@@ -180,7 +180,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    // REEMPLAZA CON TUS CREDENCIALES DE FIREBASE
+    // CREDENCIALES DE FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyCtGIdiB6TX4tmSJDypRKpBA3QYEW6BpyU",
         authDomain: "captacion-comarca.firebaseapp.com",
@@ -193,7 +193,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // REEMPLAZA CON LA URL QUE TE DIO GOOGLE APPS SCRIPT
+    // URL DE GOOGLE APPS SCRIPT
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzANmOuuPefE0c-jJ_U9NbyjEqt4Ks2R9iMUrK6ou0EHs6y-LxwcDneCbKq0rrzdKLYwg/exec";
 
     document.getElementById('captacionForm').addEventListener('submit', async (e) => {
@@ -205,17 +205,40 @@
 
         const fotoFile = document.getElementById('foto').files[0];
         let fotoUrl = ""; 
-        let nombreArchivoDrive = ""; // Aquí guardaremos el nombre de respaldo
+        let nombreArchivoDrive = ""; 
+        let statusFalloFoto = null; // Guardará el código HTTP si la subida a Drive da error (4xx o 5xx)
 
-        // 1. CONTROL DE LA FOTO (Plan B para cuenta educativa)
+        // --- PASO 1: GENERAR EL ID PERSONALIZADO PRIMERO ---
+        const nombreValor = document.getElementById('nombre').value;
+        const telefonoValor = document.getElementById('telefono').value;
+
+        // Limpieza de nombre (minúsculas, sin acentos, guiones por espacios)
+        const nombreLimpio = nombreValor
+            .toLowerCase()
+            .trim()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "") 
+            .replace(/[^a-z0-9\s-]/g, "")    
+            .replace(/\s+/g, "-");           
+
+        // Limpieza de teléfono (dejamos solo números)
+        const telefonoLimpio = telefonoValor.replace(/[^0-9]/g, "");
+
+        // ID único definitivo para el registro de Firebase y el nombre del archivo
+        const idPersonalizado = `${nombreLimpio}-${telefonoLimpio}`;
+
+
+        // --- PASO 2: PROCESAMIENTO Y ENVÍO DE LA FOTO ---
         if (fotoFile) {
             try {
-                // Creamos el nombre único aquí para tenerlo controlado
-                nombreArchivoDrive = `${Date.now()}_${fotoFile.name}`;
+                // Obtenemos la extensión original de la foto (.jpg, .png, etc.)
+                const extension = fotoFile.name.split('.').pop();
+                nombreArchivoDrive = `${idPersonalizado}.${extension}`;
 
-                const base64Data = await new Promise((resolve) => {
+                const base64Data = await new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = (error) => reject(error);
                     reader.readAsDataURL(fotoFile);
                 });
 
@@ -225,57 +248,51 @@
                     body: JSON.stringify({
                         base64: base64Data,
                         mimeType: fotoFile.type,
-                        filename: nombreArchivoDrive // Usamos nuestro nombre único
+                        filename: nombreArchivoDrive // Pasamos el nuevo nombre limpio al script
                     })
                 });
 
+                // REQUERIMIENTO: Si el servidor devuelve un código de error HTTP (4xx o 5xx)
+                if (!response.ok) {
+                    throw new Error(`HTTP_${response.status}`);
+                }
+
                 const responseText = await response.text();
                 
-                // Intentamos cazar la URL por si acaso algún día Google se vuelve bueno
+                // Procesado de URL por si no hay bloqueo CORS
                 const urlMatch = responseText.match(/https?:\/\/[^\s"']+/);
                 if (urlMatch) {
                     let rawUrl = urlMatch[0];
                     const driveIdMatch = rawUrl.match(/\/d\/([^/]+)/);
                     if (driveIdMatch && driveIdMatch[1]) {
-                        fotoUrl = `https://lh3.googleusercontent.com/d/${driveIdMatch[1]}`;
+                        fotoUrl = `http://googleusercontent.com/profile/picture/${driveIdMatch[1]}`;
                     } else {
                         fotoUrl = rawUrl;
                     }
                 }
 
             } catch (fotoError) {
-                console.error("Error en la subida, pero la foto suele llegar igual:", fotoError);
+                console.error("Error detectado en la sección de foto:", fotoError);
+                
+                // Si el error ha sido un código HTTP real lanzado por nosotros (4xx/5xx)
+                if (fotoError.message && fotoError.message.startsWith("HTTP_")) {
+                    statusFalloFoto = fotoError.message.split("_")[1];
+                } else {
+                    // Si cae aquí es por el bloqueo silencioso de CORS de la cuenta educativa.
+                    // No es un error 4xx/5xx del servidor, sino una restricción de lectura local.
+                    console.log("Bloqueo CORS activo en cuenta institucional. Se aplicará el Plan B.");
+                }
             }
 
-            // [EL TRUCO DEL PLAN B] 
-            // Si la foto se ha procesado pero 'fotoUrl' se ha quedado vacía "" por el bloqueo,
-            // le metemos el nombre del archivo para que el míster sepa cuál es.
-            if (!fotoUrl && nombreArchivoDrive) {
+            // Aplicación del Plan B si la URL quedó vacía pero el servidor no tiró un error 4xx o 5xx
+            if (!fotoUrl && nombreArchivoDrive && !statusFalloFoto) {
                 fotoUrl = `📁 Buscar en Drive: ${nombreArchivoDrive}`;
             }
         }
 
-        // 2. REGISTRO EN FIREBASE (Con ID personalizado: nombre-apellidos-telefono)
+
+        // --- PASO 3: REGISTRO FINAL EN FIREBASE Y ALERTAS INTERACTIVAS ---
         try {
-            const nombreValor = document.getElementById('nombre').value;
-            const telefonoValor = document.getElementById('telefono').value;
-
-            // 1. Limpiamos el nombre: minúsculas, sin acentos y espacios por guiones
-            const nombreLimpio = nombreValor
-                .toLowerCase()
-                .trim()
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "") // Quita acentos (á -> a, ó -> o)
-                .replace(/[^a-z0-9\s-]/g, "")    // Quita caracteres raros o emojis
-                .replace(/\s+/g, "-");           // Cambia espacios por guiones
-
-            // 2. Limpiamos el teléfono (dejamos solo los números por si ponen espacios o +34)
-            const telefonoLimpio = telefonoValor.replace(/[^0-9]/g, "");
-
-            // 3. Juntamos todo para crear el ID único del documento
-            const idPersonalizado = `${nombreLimpio}-${telefonoLimpio}`;
-
-            // Guardamos usando setDoc y doc para elegir nosotros el ID en la colección "jugadores"
             await setDoc(doc(db, "jugadores", idPersonalizado), {
                 nombre: nombreValor,
                 telefono: telefonoValor,
@@ -290,16 +307,24 @@
                 fechaRegistro: serverTimestamp()
             });
 
-            alert("¡Datos enviados correctamente! Mucha suerte en las pruebas.");
+            // REQUERIMIENTO: Evaluar éxito completo o fallos parciales de red
+            if (statusFalloFoto) {
+                alert(`⚠️ Los datos de texto se han guardado, pero la foto ha fallado.\n\n• Base de datos: ÉXITO\n• Servidor de fotos: ERROR (Código HTTP: ${statusFalloFoto})\n\nPor favor, verifica si la foto llegó a tu Drive manualmente.`);
+            } else {
+                alert("✅ ¡Perfecto! Tus datos y tu foto se han procesado de manera correcta. ¡Mucha suerte en las pruebas!");
+            }
+            
             document.getElementById('captacionForm').reset();
 
         } catch (error) {
-            console.error("Error al guardar en Firebase: ", error);
-            alert("Hubo un problema al enviar el formulario. Inténtalo de nuevo.");
+            console.error("Error definitivo al guardar en Firebase: ", error);
+            // REQUERIMIENTO: Mostrar explícitamente el tipo de fallo de la base de datos
+            alert(`❌ Error crítico al enviar el formulario.\n\n• Base de datos: FALLO\n• Detalles del error: ${error.code || error.message || error}\n\nPor favor, revisa tu conexión a internet e inténtalo de nuevo.`);
         } finally {
             btn.disabled = false;
             btn.innerText = "Enviar mis datos";
         }
+    });
 </script>
 </body>
 </html>
