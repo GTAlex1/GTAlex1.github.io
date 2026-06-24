@@ -256,24 +256,27 @@
 
     // 3. Función para rellenar y mostrar el modal del perfil
     function abrirPerfil(jugador) {
-        document.getElementById('pNombre').innerText = jugador.nombre;
-        document.getElementById('pPosicion').innerText = jugador.posicion;
-        document.getElementById('pTelefono').innerText = jugador.telefono;
-        document.getElementById('pEdad').innerText = jugador.edad;
-        document.getElementById('pPierna').innerText = jugador.pierna;
-        document.getElementById('pFisico').innerText = `${jugador.altura || '--'} cm / ${jugador.peso || '--'} kg`;
-        document.getElementById('pEquipo').innerText = jugador.equipo_anterior || "Ninguno / Agente libre";
-        document.getElementById('pNotas').innerText = jugador.notas || "Sin observaciones adicionales.";
-        
-        const imgElement = document.getElementById('pFoto');
-        if (jugador.foto) {
-            imgElement.src = jugador.foto;
-        } else {
-            imgElement.src = 'https://via.placeholder.com/150?text=Sin+Foto';
-        }
+    document.getElementById('pNombre').innerText = jugador.nombre;
+    document.getElementById('pPosicion').innerText = jugador.posicion;
+    document.getElementById('pTelefono').innerText = jugador.telefono;
+    document.getElementById('pEdad').innerText = jugador.edad;
+    document.getElementById('pPierna').innerText = jugador.pierna;
+    document.getElementById('pFisico').innerText = `${jugador.altura || '--'} cm / ${jugador.peso || '--'} kg`;
+    document.getElementById('pEquipo').innerText = jugador.equipo_anterior || "Ninguno / Agente libre";
+    document.getElementById('pNotas').innerText = jugador.notes || jugador.notas || "Sin observaciones adicionales.";
+    
+    // Cambiado desde aquí para evitar enlaces externos rotos
+    const imgElement = document.getElementById('pFoto');
+    const fotoPorDefecto = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'><rect width='100%' height='100%' fill='%232a2a2a'/><text x='50%' y='50%' font-family='sans-serif' font-size='14' font-weight='bold' fill='%23888' dominant-baseline='middle' text-anchor='middle'>SIN FOTO</text></svg>";
 
-        document.getElementById('perfilModal').style.display = 'flex';
+    if (jugador.foto && jugador.foto.trim() !== "" && !jugador.foto.includes("Buscar en Drive")) {
+        imgElement.src = jugador.foto;
+    } else {
+        imgElement.src = fotoPorDefecto;
     }
+
+    document.getElementById('perfilModal').style.display = 'flex';
+}
 
     // Cerrar el modal
     document.getElementById('closeModal').addEventListener('click', () => {
