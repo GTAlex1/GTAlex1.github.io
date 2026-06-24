@@ -17,7 +17,7 @@
         }
         .header-panel {
             max-width: 800px;
-            margin: 0 auto 30px auto;
+            margin: 0 auto 20px auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -39,6 +39,51 @@
             font-weight: bold;
             font-family: 'Montserrat', sans-serif;
         }
+        
+        /* Panel de Filtros y Búsqueda */
+        .filter-panel {
+            max-width: 800px;
+            margin: 0 auto 20px auto;
+            background-color: #1e1e1e;
+            padding: 15px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            align-items: center;
+            border-bottom: 3px solid #4CAF50;
+        }
+        @media (max-width: 768px) {
+            .filter-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+        .filter-panel input, .filter-panel select, .filter-panel button {
+            background-color: #2a2a2a;
+            color: #ffffff;
+            border: 1px solid #3b3b3b;
+            padding: 10px 12px;
+            border-radius: 5px;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.9em;
+            outline: none;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .filter-panel input:focus, .filter-panel select:focus {
+            border-color: #4CAF50;
+        }
+        .btn-clear {
+            background-color: #333333 !important;
+            cursor: pointer;
+            font-weight: bold;
+            border: none;
+            transition: background-color 0.2s;
+        }
+        .btn-clear:hover {
+            background-color: #444444 !important;
+        }
+
         .container {
             max-width: 800px;
             margin: 0 auto;
@@ -155,16 +200,43 @@
     <button class="btn-logout" id="btnLogout">Salir</button>
 </div>
 
+<div class="filter-panel">
+    <input type="text" id="searchNombre" placeholder="Buscar por nombre...">
+    
+    <select id="filterPosicion">
+        <option value="todos">Posición</option>
+        <option value="Portero">Portero</option>
+        <option value="Central">Central</option>
+        <option value="Lateral">Lateral</option>
+        <option value="Medio centro">Medio centro</option>
+        <option value="Delantero">Delantero</option>
+    </select>
+
+    <select id="filterPierna">
+        <option value="todos">Pierna</option>
+        <option value="Derecha">Derecha</option>
+        <option value="Izquierda">Izquierda</option>
+        <option value="Ambidiestro">Ambidiestro</option>
+    </select>
+
+    <select id="sortFecha">
+        <option value="desc">Recientes primero</option>
+        <option value="asc">Antiguos primero</option>
+        <option value="notas">Con observaciones</option>
+    </select>
+
+    <button class="btn-clear" id="btnLimpiar">Limpiar</button>
+</div>
+
 <div class="container" id="listaJugadores">
     <p style="text-align: center; color: #888;">Cargando aspirantes...</p>
 </div>
 
-<!-- Ventana de Perfil Detallado (Modal) -->
 <div class="modal" id="perfilModal">
     <div class="modal-content">
         <span class="close-modal" id="closeModal">&times;</span>
         <div class="profile-header">
-            <img src="" alt="Foto Jugador" class="profile-img" id="pFoto" onerror="this.src='https://via.placeholder.com/150?text=Sin+Foto'">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'><rect width='100%' height='100%' fill='%232a2a2a'/><text x='50%' y='50%' font-family='sans-serif' font-size='14' font-weight='bold' fill='%23888' dominant-baseline='middle' text-anchor='middle'>SIN FOTO</text></svg>" alt="Foto Jugador" class="profile-img" id="pFoto">
             <div class="profile-title">
                 <h3 id="pNombre">Nombre Completo</h3>
                 <span class="jugador-posicion" id="pPosicion">Posición</span>
@@ -175,7 +247,7 @@
             <div class="info-item"><strong>Edad</strong><span id="pEdad"></span> años</div>
             <div class="info-item"><strong>Pierna Dominante</strong><span id="pPierna"></span></div>
             <div class="info-item"><strong>Físico</strong><span id="pFisico"></span></div>
-            <div class="info-item class-full" style="grid-column: span 2;"><strong>Último Equipo</strong><span id="pEquipo"></span></div>
+            <div class="info-item" style="grid-column: span 2;"><strong>Último Equipo</strong><span id="pEquipo"></span></div>
             <div class="info-item info-full"><strong>Observaciones del Jugador</strong><p id="pNotas" style="margin: 5px 0 0 0; font-size: 0.9em; color: #ccc;"></p></div>
         </div>
     </div>
@@ -201,6 +273,9 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
+    // Variable interna para cachear el listado y filtrar de forma local instantánea
+    let cacheJugadores = [];
+
     // 1. Verificar estado de autenticación
     console.log("2. Escuchando estado de autenticación (onAuthStateChanged)...");
     onAuthStateChanged(auth, (user) => {
@@ -219,6 +294,7 @@
         console.log("4. Iniciando consulta a Firestore...");
         
         try {
+            // Descarga inicial ordenada por fecha por defecto
             const q = query(collection(db, "jugadores"), orderBy("fechaRegistro", "desc"));
             
             console.log("5. Ejecutando getDocs(). Apuntando al servidor...");
@@ -231,22 +307,22 @@
                 return;
             }
 
-            listaContenedor.innerHTML = ''; // Limpiar texto de carga
-
+            // Almacenar en la caché local para no volver a consumir lecturas en la base de datos al buscar
+            cacheJugadores = [];
             querySnapshot.forEach((doc) => {
-                const jugador = doc.data();
-                
-                const card = document.createElement('div');
-                card.className = 'jugador-card';
-                card.innerHTML = `
-                    <span class="jugador-nombre">${jugador.nombre}</span>
-                    <span class="jugador-posicion">${jugador.posicion}</span>
-                `;
-                
-                card.addEventListener('click', () => abrirPerfil(jugador));
-                listaContenedor.appendChild(card);
+                cacheJugadores.push({ id: doc.id, ...doc.data() });
             });
-            console.log(`7. Se han renderizado ${querySnapshot.size} tarjetas de jugadores.`);
+
+            // Enlazar los eventos de escucha del panel de filtrado
+            document.getElementById('searchNombre').addEventListener('input', aplicarFiltros);
+            document.getElementById('filterPosicion').addEventListener('change', aplicarFiltros);
+            document.getElementById('filterPierna').addEventListener('change', aplicarFiltros);
+            document.getElementById('sortFecha').addEventListener('change', aplicarFiltros);
+            document.getElementById('btnLimpiar').addEventListener('click', limpiarFiltros);
+
+            // Renderizar la lista inicial
+            renderizarLista(cacheJugadores);
+            console.log(`7. Se han guardado y renderizado ${cacheJugadores.length} tarjetas de jugadores.`);
 
         } catch (error) {
             console.error("❌ Error crítico en cargarJugadores: ", error);
@@ -254,29 +330,94 @@
         }
     }
 
-    // 3. Función para rellenar y mostrar el modal del perfil
-    function abrirPerfil(jugador) {
-    document.getElementById('pNombre').innerText = jugador.nombre;
-    document.getElementById('pPosicion').innerText = jugador.posicion;
-    document.getElementById('pTelefono').innerText = jugador.telefono;
-    document.getElementById('pEdad').innerText = jugador.edad;
-    document.getElementById('pPierna').innerText = jugador.pierna;
-    document.getElementById('pFisico').innerText = `${jugador.altura || '--'} cm / ${jugador.peso || '--'} kg`;
-    document.getElementById('pEquipo').innerText = jugador.equipo_anterior || "Ninguno / Agente libre";
-    document.getElementById('pNotas').innerText = jugador.notes || jugador.notas || "Sin observaciones adicionales.";
-    
-    // Cambiado desde aquí para evitar enlaces externos rotos
-    const imgElement = document.getElementById('pFoto');
-    const fotoPorDefecto = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'><rect width='100%' height='100%' fill='%232a2a2a'/><text x='50%' y='50%' font-family='sans-serif' font-size='14' font-weight='bold' fill='%23888' dominant-baseline='middle' text-anchor='middle'>SIN FOTO</text></svg>";
+    // 3. Función exclusiva para pintar los elementos filtrados en el DOM
+    function renderizarLista(lista) {
+        const listaContenedor = document.getElementById('listaJugadores');
+        listaContenedor.innerHTML = ''; // Limpiar listado anterior
 
-    if (jugador.foto && jugador.foto.trim() !== "" && !jugador.foto.includes("Buscar en Drive")) {
-        imgElement.src = jugador.foto;
-    } else {
-        imgElement.src = fotoPorDefecto;
+        if (lista.length === 0) {
+            listaContenedor.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No hay ningún jugador que coincida con los filtros.</p>';
+            return;
+        }
+
+        lista.forEach((jugador) => {
+            const card = document.createElement('div');
+            card.className = 'jugador-card';
+            card.innerHTML = `
+                <span class="jugador-nombre">${jugador.nombre}</span>
+                <span class="jugador-posicion">${jugador.posicion}</span>
+            `;
+            
+            card.addEventListener('click', () => abrirPerfil(jugador));
+            listaContenedor.appendChild(card);
+        });
     }
 
-    document.getElementById('perfilModal').style.display = 'flex';
-}
+    // 4. Lógica de Filtrado y Ordenación Dinámica en Memoria
+    function aplicarFiltros() {
+        const busqueda = document.getElementById('searchNombre').value.toLowerCase().trim();
+        const posicionSel = document.getElementById('filterPosicion').value;
+        const piernaSel = document.getElementById('filterPierna').value;
+        const ordenSel = document.getElementById('sortFecha').value;
+
+        let resultado = cacheJugadores.filter(jugador => {
+            // Búsqueda por texto (Nombre)
+            const cumpleNombre = jugador.nombre ? jugador.nombre.toLowerCase().includes(busqueda) : false;
+            
+            // Filtro de Posición
+            const cumplePosicion = (posicionSel === 'todos') || (jugador.posicion === posicionSel);
+            
+            // Filtro de Pierna Dominante
+            const cumplePierna = (piernaSel === 'todos') || (jugador.pierna === piernaSel);
+            
+            // Filtro Con Observaciones (Excluye vacíos o el texto genérico)
+            const cumpleNotas = (ordenSel !== 'notas') || 
+                (jugador.notas && jugador.notas.trim() !== "" && jugador.notas !== "Sin observaciones adicionales." && jugador.notas !== "Sin observaciones adicionales");
+
+            return cumpleNombre && cumplePosicion && cumplePierna && cumpleNotas;
+        });
+
+        // Ordenar según los timestamps de registro
+        if (ordenSel === 'asc') {
+            resultado.sort((a, b) => (a.fechaRegistro?.seconds || 0) - (b.fechaRegistro?.seconds || 0));
+        } else if (ordenSel === 'desc') {
+            resultado.sort((a, b) => (b.fechaRegistro?.seconds || 0) - (a.fechaRegistro?.seconds || 0));
+        }
+
+        renderizarLista(resultado);
+    }
+
+    // 5. Función del botón Limpiar para restablecer el panel
+    function limpiarFiltros() {
+        document.getElementById('searchNombre').value = '';
+        document.getElementById('filterPosicion').value = 'todos';
+        document.getElementById('filterPierna').value = 'todos';
+        document.getElementById('sortFecha').value = 'desc';
+        renderizarLista(cacheJugadores);
+    }
+
+    // 6. Rellenar y desplegar el modal del perfil de forma segura
+    function abrirPerfil(jugador) {
+        document.getElementById('pNombre').innerText = jugador.nombre;
+        document.getElementById('pPosicion').innerText = jugador.posicion;
+        document.getElementById('pTelefono').innerText = jugador.telefono;
+        document.getElementById('pEdad').innerText = jugador.edad;
+        document.getElementById('pPierna').innerText = jugador.pierna;
+        document.getElementById('pFisico').innerText = `${jugador.altura || '--'} cm / ${jugador.peso || '--'} kg`;
+        document.getElementById('pEquipo').innerText = jugador.equipo_anterior || "Ninguno / Agente libre";
+        document.getElementById('pNotas').innerText = jugador.notes || jugador.notas || "Sin observaciones adicionales.";
+        
+        const imgElement = document.getElementById('pFoto');
+        const fotoPorDefecto = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'><rect width='100%' height='100%' fill='%232a2a2a'/><text x='50%' y='50%' font-family='sans-serif' font-size='14' font-weight='bold' fill='%23888' dominant-baseline='middle' text-anchor='middle'>SIN FOTO</text></svg>";
+
+        if (jugador.foto && jugador.foto.trim() !== "" && !jugador.foto.includes("Buscar en Drive")) {
+            imgElement.src = jugador.foto;
+        } else {
+            imgElement.src = fotoPorDefecto;
+        }
+
+        document.getElementById('perfilModal').style.display = 'flex';
+    }
 
     // Cerrar el modal
     document.getElementById('closeModal').addEventListener('click', () => {
