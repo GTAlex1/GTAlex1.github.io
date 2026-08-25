@@ -1,0 +1,227 @@
+/* ==========================================================================
+   RESET & ULTRA-MODERN BASE STYLES
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg-dark: #090d16;
+  --card-bg: rgba(22, 28, 45, 0.55);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --card-hover-border: rgba(99, 102, 241, 0.5);
+  
+  --accent-primary: #6366f1; /* Indigo vibrant */
+  --accent-secondary: #a855f7; /* Purple glow */
+  --accent-cyan: #06b6d4; /* Neon Cyan */
+  
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --text-dim: #6b7280;
+
+  --shadow-glow: 0 0 50px -10px rgba(99, 102, 241, 0.25);
+  --shadow-card: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Background Animated Gradient Mesh */
+body::before {
+  content: '';
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(168, 85, 247, 0.12) 40%, rgba(0, 0, 0, 0) 70%);
+  filter: blur(80px);
+  z-index: -1;
+  pointer-events: none;
+  animation: pulseMesh 8s ease-in-out infinite alternate;
+}
+
+@keyframes pulseMesh {
+  0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.7; }
+  100% { transform: translate(-50%, -45%) scale(1.15); opacity: 1; }
+}
+
+/* ==========================================================================
+   HEADER SECTION
+   ========================================================================== */
+header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+header h1 {
+  font-size: clamp(2.2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, #ffffff 30%, var(--accent-primary) 70%, var(--accent-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+  position: relative;
+  display: inline-block;
+}
+
+header h1::after {
+  content: '';
+  display: block;
+  width: 40%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-cyan));
+  margin: 0.5rem auto 0;
+  border-radius: 4px;
+}
+
+/* ==========================================================================
+   SECTION & NAVIGATION (GRID LAYOUT)
+   ========================================================================== */
+h2 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+nav {
+  width: 100%;
+  max-width: 850px;
+}
+
+nav ul {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Card Styling */
+nav ul li {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Top Border Highlight Effect */
+nav ul li::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+nav ul li:hover {
+  transform: translateY(-6px);
+  border-color: var(--card-hover-border);
+  box-shadow: var(--shadow-glow), var(--shadow-card);
+  color: var(--text-main);
+}
+
+nav ul li:hover::before {
+  opacity: 1;
+}
+
+/* Links inside Cards */
+nav ul li a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 700;
+  margin-left: 0.25rem;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+nav ul li a strong {
+  color: var(--accent-cyan);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -0.02em;
+  font-size: 1.05rem;
+  background: linear-gradient(135deg, #ffffff, var(--accent-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Arrow indicator on link hover */
+nav ul li a::after {
+  content: '→';
+  display: inline-block;
+  font-family: system-ui;
+  transition: transform 0.25s ease;
+  color: var(--accent-cyan);
+}
+
+nav ul li:hover a::after {
+  transform: translateX(5px);
+}
+
+/* ==========================================================================
+   FOOTER SECTION
+   ========================================================================== */
+footer {
+  margin-top: 4rem;
+  text-align: center;
+}
+
+footer p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  letter-spacing: 0.02em;
+}
+
+footer strong {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================================================== */
+@media (max-width: 600px) {
+  body {
+    padding: 1.5rem 1rem;
+  }
+  
+  nav ul {
+    grid-template-columns: 1fr;
+  }
+}
