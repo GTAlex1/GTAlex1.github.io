@@ -80,10 +80,10 @@ h2 {
   text-align: center;
 }
 
-/* Navigation & List Cleaning */
+/* Navigation & Cards (4 Horizontal Columns Layout) */
 nav {
   width: 100%;
-  max-width: 720px;
+  max-width: 1100px; /* Ancho para dar espacio a las 4 tarjetas */
 }
 
 nav ul {
@@ -91,8 +91,8 @@ nav ul {
   padding: 0 !important;
   margin: 0 !important;
   display: grid !important;
-  grid-template-columns: repeat(2, 1fr) !important;
-  gap: 1rem;
+  grid-template-columns: repeat(4, 1fr) !important; /* 4 en horizontal */
+  gap: 1.25rem;
 }
 
 nav ul li {
@@ -101,31 +101,57 @@ nav ul li {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--card-border);
-  border-radius: 14px;
-  padding: 1.1rem 1.4rem;
+  border-radius: 16px;
+  padding: 1.8rem 1.2rem;
   transition: all 0.3s ease;
   color: var(--text-muted);
   font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 85px;
+  
+  /* Alineación vertical centrada */
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  min-height: 180px; /* Todas miden exactamente lo mismo */
 }
 
 nav ul li:hover {
-  transform: translateY(-3px);
+  transform: translateY(-5px);
   background: var(--card-hover);
   border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 12px 30px -5px rgba(99, 102, 241, 0.3);
   color: var(--text-main);
 }
 
-@media (max-width: 600px) {
+nav ul li a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+nav ul li a strong {
+  color: var(--accent-cyan);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+}
+
+/* Adaptación responsive para pantallas pequeñas */
+@media (max-width: 900px) {
+  nav ul {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 550px) {
   nav ul {
     grid-template-columns: 1fr !important;
   }
 }
-
 /* Links */
 nav ul li a {
   color: #ffffff;
