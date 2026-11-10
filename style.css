@@ -106,6 +106,8 @@ nav ul {
 
 nav ul li {
   list-style-type: none !important;
+  position: relative;
+  cursor: pointer;
   background: var(--card-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -143,6 +145,19 @@ nav ul li a {
   text-decoration: none;
   font-weight: 500;
   display: block;
+}
+
+/* Toda la tarjeta es el enlace, no solo el texto y la flecha */
+nav ul li a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+}
+
+nav ul li a:focus-visible::after {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
 }
 
 nav ul li a strong {
