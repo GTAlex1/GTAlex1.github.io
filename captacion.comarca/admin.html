@@ -87,7 +87,7 @@ dialog::backdrop{background:#050a08c9}
             </form>
             <div class="field">
                 <label for="selectCaptacion">Captación seleccionada</label>
-                <select id="selectCaptacion"><option value="">Inscripciones anteriores</option></select>
+                <select id="selectCaptacion"></select>
             </div>
             <div class="actions">
                 <a class="action" id="enlaceCaptacion" hidden>Abrir formulario ↗</a>
@@ -174,6 +174,7 @@ dialog::backdrop{background:#050a08c9}
     const toggle = document.getElementById('estadoFormulario');
     const crear = document.getElementById('crearCaptacion');
     let cacheJugadores = [];
+    const captacionComarca = 'comarca-senior';
     let captaciones = new Map();
     let ultimaConsulta = 0;
 
@@ -188,7 +189,7 @@ dialog::backdrop{background:#050a08c9}
                 mensaje.textContent = 'Tu cuenta no tiene acceso al panel de captaciones.';
                 return;
             }
-            await cargarCaptaciones('');
+            await cargarCaptaciones(captacionComarca);
             document.getElementById('gestionarCaptaciones').hidden = false;
             document.getElementById('filtros').hidden = false;
         } catch {
@@ -199,12 +200,12 @@ dialog::backdrop{background:#050a08c9}
     async function cargarCaptaciones(seleccion) {
         const resultado = await getDocs(collection(db, 'captaciones'));
         captaciones = new Map(resultado.docs.map(item => [item.id, item.data()]));
-        selector.replaceChildren(new Option('Inscripciones anteriores', ''));
+        selector.replaceChildren();
         const ordenadas = [...captaciones].sort((a, b) => a[1].nombre.localeCompare(b[1].nombre, 'es'));
         for (const [id, datos] of ordenadas) {
             selector.add(new Option(datos.nombre + (datos.abierta ? '' : ' (cerrada)'), id));
         }
-        selector.value = captaciones.has(seleccion) ? seleccion : '';
+        if (captaciones.has(seleccion)) selector.value = seleccion;
         await mostrarCaptacion();
     }
 
@@ -219,12 +220,20 @@ dialog::backdrop{background:#050a08c9}
         }
         cacheJugadores = [];
         document.getElementById('listaJugadores').replaceChildren();
+        if (!datos) {
+            mensaje.textContent = 'Todavía no hay formularios de captación.';
+            return;
+        }
         mensaje.textContent = 'Cargando inscripciones…';
         try {
-            const origen = id ? collection(db, 'captaciones', id, 'inscripciones') : collection(db, 'jugadores');
-            const resultado = await getDocs(query(origen, orderBy('fechaRegistro', 'desc')));
+            const origenes = [collection(db, 'captaciones', id, 'inscripciones')];
+            if (id === captacionComarca) origenes.push(collection(db, 'jugadores'));
+            const resultados = await Promise.all(origenes.map(origen =>
+                getDocs(query(origen, orderBy('fechaRegistro', 'desc')))
+            ));
             if (consulta !== ultimaConsulta) return;
-            cacheJugadores = resultado.docs.map(item => item.data());
+            cacheJugadores = resultados.flatMap(resultado => resultado.docs.map(item => item.data()));
+            cacheJugadores.sort((a, b) => (b.fechaRegistro?.toMillis() ?? 0) - (a.fechaRegistro?.toMillis() ?? 0));
             aplicarFiltros();
             mensaje.textContent = '';
         } catch {
