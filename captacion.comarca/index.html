@@ -202,7 +202,7 @@
     let disponible = false;
 
     async function cargarCaptacion() {
-        if (!/^[a-z0-9-]{1,60}$/.test(captacion)) throw new Error('Enlace inválido.');
+        if (!/^[A-Za-z0-9-]{1,60}$/.test(captacion)) throw new Error('Enlace inválido.');
         const resultado = await getDoc(doc(db, 'captaciones', captacion));
         if (!resultado.exists() || !resultado.data().abierta) {
             throw new Error('Esta captación no está abierta.');
