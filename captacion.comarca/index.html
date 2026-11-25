@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Captaciones SÉNIOR - Comarca de Jerez</title>
+    <title>Captaciones</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -102,23 +102,24 @@
 <body>
 
 <div class="form-container">
-    <h2>Comarca de Jerez<br><span style="color: #aaa; font-size: 0.55em;">Captaciones Sénior</span></h2>
-    <form id="captacionForm">
+    <h2 id="tituloCaptacion">Captaciones Sénior · Comarca de Jerez</h2>
+    <p id="estadoCaptacion" role="status"></p>
+    <form id="captacionForm" hidden>
         
         <div class="form-group">
             <label for="nombre">Nombre completo *</label>
-            <input type="text" id="nombre" required>
+            <input type="text" id="nombre" maxlength="120" required>
         </div>
 
         <div class="form-group">
             <label for="telefono">Teléfono de contacto *</label>
-            <input type="tel" id="telefono" required>
+            <input type="tel" id="telefono" maxlength="40" required>
         </div>
 
         <div class="row">
             <div class="form-group">
                 <label for="edad">Edad *</label>
-                <input type="number" id="edad" min="16" required>
+                <input type="number" id="edad" min="16" max="120" required>
             </div>
             <div class="form-group">
                 <label for="pierna">Pierna dominante *</label>
@@ -134,11 +135,11 @@
         <div class="row">
             <div class="form-group">
                 <label for="altura">Altura (cm) *</label>
-                <input type="number" id="altura" required>
+                <input type="number" id="altura" min="1" max="300" required>
             </div>
             <div class="form-group">
                 <label for="peso">Peso (kg) *</label>
-                <input type="number" id="peso" step="0.1" required>
+                <input type="number" id="peso" min="0.1" max="500" step="0.1" required>
             </div>
         </div>
 
@@ -159,17 +160,18 @@
 
         <div class="form-group">
             <label for="equipo_anterior">Último equipo en el que jugaste</label>
-            <input type="text" id="equipo_anterior" placeholder="Ej: CD Guadalcacín">
+            <input type="text" id="equipo_anterior" maxlength="120" placeholder="Ej: CD Guadalcacín">
         </div>
 
         <div class="form-group">
             <label for="foto">Foto de cara (Opcional)</label>
-            <input type="file" id="foto" accept="image/*">
+            <input type="file" id="foto" accept="image/jpeg,image/png,image/webp" aria-describedby="ayudaFoto">
+            <small id="ayudaFoto">JPEG, PNG o WebP de hasta 10 MB. Solo el equipo técnico podrá verla.</small>
         </div>
 
         <div class="form-group">
             <label for="notes">Observaciones (Opcional)</label>
-            <textarea id="notas" rows="3" placeholder="¿Algo que el míster deba saber?"></textarea>
+            <textarea id="notas" maxlength="2000" rows="3" placeholder="¿Algo que el míster deba saber?"></textarea>
         </div>
 
         <button type="submit" id="btnEnviar">Enviar mis datos</button>
@@ -178,7 +180,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
     // CREDENCIALES DE FIREBASE
     const firebaseConfig = {
@@ -193,102 +195,84 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 🔥 PON AQUÍ TU API KEY GRATUITA DE IMGBB
-    const IMGBB_API_KEY = "dc0b6996cc313ceb1368c1d29fd366a4";
+    const form = document.getElementById('captacionForm');
+    const estado = document.getElementById('estadoCaptacion');
+    const params = new URLSearchParams(location.search);
+    const captacion = params.get('captacion') ?? 'comarca-senior';
+    let disponible = false;
 
-    document.getElementById('captacionForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const btn = document.getElementById('btnEnviar');
-        btn.disabled = true;
-        btn.innerText = "Enviando...";
-
-        const fotoFile = document.getElementById('foto').files[0];
-        let fotoUrl = ""; 
-        let statusFalloFoto = null;
-
-        // --- PASO 1: GENERAR EL ID PERSONALIZADO PRIMERO ---
-        const nombreValor = document.getElementById('nombre').value;
-        const telefonoValor = document.getElementById('telefono').value;
-
-        const nombreLimpio = nombreValor
-            .toLowerCase()
-            .trim()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "") 
-            .replace(/[^a-z0-9\s-]/g, "")    
-            .replace(/\s+/g, "-");           
-
-        const telefonoLimpio = telefonoValor.replace(/[^0-9]/g, "");
-        const idPersonalizado = `${nombreLimpio}-${telefonoLimpio}`;
-
-        // --- PASO 2: SUBIDA AUTOMÁTICA CON NOMBRE PERSONALIZADO ---
-        if (fotoFile) {
-            try {
-                // 1. Obtenemos la extensión original (.jpg, .png, etc.)
-                const extension = fotoFile.name.split('.').pop();
-                const nombreArchivoFinal = `${idPersonalizado}.${extension}`;
-
-                // 2. Creamos un nuevo objeto File con el nombre que TÚ quieres
-                const archivoRenombrado = new File([fotoFile], nombreArchivoFinal, { type: fotoFile.type });
-
-                // 3. Enviamos este nuevo archivo
-                const formData = new FormData();
-                formData.append("image", archivoRenombrado);
-
-                const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP_${response.status}`);
-                }
-
-                const datosImgBB = await response.json();
-                
-                if (datosImgBB.success) {
-                    fotoUrl = datosImgBB.data.url;
-                } else {
-                    throw new Error("IMGBB_FALSE");
-                }
-
-            } catch (fotoError) {
-                // ... (el resto de tu lógica de manejo de errores sigue igual)
-            }
-        
+    async function cargarCaptacion() {
+        if (!/^[a-z0-9-]{1,60}$/.test(captacion)) throw new Error('Enlace inválido.');
+        const resultado = await getDoc(doc(db, 'captaciones', captacion));
+        if (!resultado.exists() || !resultado.data().abierta) {
+            throw new Error('Esta captación no está abierta.');
         }
+        const nombre = resultado.data().nombre;
+        document.title = nombre + ' · Captaciones';
+        document.getElementById('tituloCaptacion').textContent = nombre;
+        form.hidden = false;
+        disponible = true;
+    }
 
-        // --- PASO 3: REGISTRO FINAL EN FIREBASE ---
+    cargarCaptacion().catch(error => {
+        estado.textContent = error.code ? 'No se pudo abrir la captación.' : error.message;
+    });
+
+    async function prepararFoto(archivo) {
+        if (!archivo) return '';
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(archivo.type) || archivo.size > 10_000_000) {
+            throw new Error('Elige una foto JPEG, PNG o WebP de hasta 10 MB.');
+        }
+        let imagen;
         try {
-            await setDoc(doc(db, "jugadores", idPersonalizado), {
-                nombre: nombreValor,
-                telefono: telefonoValor,
-                edad: parseInt(document.getElementById('edad').value),
-                pierna: document.getElementById('pierna').value,
-                altura: parseInt(document.getElementById('altura').value),
-                peso: parseFloat(document.getElementById('peso').value),
-                posicion: document.getElementById('posicion').value,
-                equipo_anterior: document.getElementById('equipo_anterior').value,
-                foto: fotoUrl, // Aquí entrará el link directo de ImgBB o se quedará vacío si no adjuntó
-                notas: document.getElementById('notas').value,
+            imagen = await createImageBitmap(archivo);
+        } catch {
+            throw new Error('No se pudo abrir la foto. Puedes elegir otra o enviar el formulario sin foto.');
+        }
+        try {
+            const escala = Math.min(1, 640 / Math.max(imagen.width, imagen.height));
+            const lienzo = document.createElement('canvas');
+            lienzo.width = Math.max(1, Math.round(imagen.width * escala));
+            lienzo.height = Math.max(1, Math.round(imagen.height * escala));
+            const contexto = lienzo.getContext('2d', { alpha: false });
+            contexto.drawImage(imagen, 0, 0, lienzo.width, lienzo.height);
+            const foto = lienzo.toDataURL('image/jpeg', 0.72);
+            if (foto.length > 200_000) throw new Error('La foto es demasiado grande. Elige otra o envía sin foto.');
+            return foto;
+        } finally {
+            imagen.close();
+        }
+    }
+
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        if (!disponible) return;
+        const btn = document.getElementById('btnEnviar');
+        if (btn.disabled) return;
+        btn.disabled = true;
+        estado.textContent = 'Enviando…';
+        const campo = id => document.getElementById(id).value.trim();
+        try {
+            const foto = await prepararFoto(document.getElementById('foto').files[0]);
+            await addDoc(collection(db, 'captaciones', captacion, 'inscripciones'), {
+                nombre: campo('nombre'),
+                telefono: campo('telefono'),
+                edad: Number(campo('edad')),
+                pierna: campo('pierna'),
+                altura: Number(campo('altura')),
+                peso: Number(campo('peso')),
+                posicion: campo('posicion'),
+                equipo_anterior: campo('equipo_anterior'),
+                notas: campo('notas'),
+                foto,
                 fechaRegistro: serverTimestamp()
             });
-
-            if (statusFalloFoto) {
-                alert(`⚠️ Datos guardados, pero la foto no se pudo subir.\n\n• Datos: ÉXITO\n• Foto: FALLO (${statusFalloFoto})`);
-            } else {
-                alert("✅ ¡Perfecto! Tus datos y tu foto se han procesado de manera correcta. ¡Mucha suerte en las pruebas!");
-            }
-            
-            document.getElementById('captacionForm').reset();
-
+            form.reset();
+            estado.textContent = 'Inscripción recibida.';
         } catch (error) {
-            console.error("Error definitivo al guardar en Firebase: ", error);
-            alert(`❌ Error crítico al enviar el formulario.\n\n• Base de datos: FALLO\n• Detalles: ${error.code || error.message || error}`);
+            estado.textContent = error.code ? 'No se pudo enviar la inscripción. Comprueba que siga abierta e inténtalo de nuevo.' : error.message;
         } finally {
             btn.disabled = false;
-            btn.innerText = "Enviar mis datos";
         }
     });
 </script>
