@@ -3,15 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Webs de Kazus</title>
-  <link rel="stylesheet" href="../style.css">
+  <meta name="theme-color" content="#10121e">
+  <title>Webs de Kazus · Kazus</title>
+  <link rel="stylesheet" href="../indices.css">
 </head>
 <body>
-  <header><h1>Webs de Kazus</h1></header>
-  <nav><ul>
-    <li><a href="compra/">Asistente de compras</a></li>
-    <li><a href="ludos/">Ludos</a></li>
-    <li><a href="../">Volver al inicio</a></li>
-  </ul></nav>
+  <header class="top">
+    <a class="brand" href="../"><span aria-hidden="true">K</span> Kazus</a>
+    <nav aria-label="Navegación principal">
+      <a href="../">Inicio</a>
+      <a href="../webs/" aria-current="page">Webs</a>
+    </nav>
+  </header>
+  <main>
+    <div class="hero">
+      <h1>Webs de Kazus</h1>
+      <p>Aplicaciones web reunidas en un solo sitio.</p>
+    </div>
+    <section>
+      <h2>Aplicaciones</h2>
+      <ul class="grid">
+        <li><a class="card featured" href="compra/">
+          <span class="icon" aria-hidden="true">€</span>
+          <span class="details"><strong>Asistente de compras</strong><small>Organiza tus compras.</small></span>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </a></li>
+        <li><a class="card mint" href="ludos/">
+          <span class="icon" aria-hidden="true">∑</span>
+          <span class="details"><strong>Ludos</strong><small>Calculadora de física con soporte para texto e imágenes.</small></span>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </a></li>
+      </ul>
+    </section>
+  </main>
+  <footer>© Kazus Suzak</footer>
 </body>
 </html>

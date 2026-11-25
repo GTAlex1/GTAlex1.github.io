@@ -1,0 +1,133 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, sans-serif;
+  color: #f6f5ff;
+  background: #10121e;
+  --muted: #b5b9cf;
+  --border: #353851;
+  --accent: #c6b6ff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0 auto;
+  width: min(100% - 2rem, 70rem);
+}
+
+a { color: inherit; text-decoration: none; }
+
+a:focus-visible {
+  outline: 2px solid #d6caff;
+  outline-offset: 4px;
+}
+
+.top, .top nav, .brand {
+  display: flex;
+  align-items: center;
+}
+
+.top {
+  justify-content: space-between;
+  gap: .65rem;
+  padding: 1.25rem 0;
+}
+
+.brand {
+  gap: .6rem;
+  font-weight: 750;
+}
+
+.brand span, .icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: .6rem;
+  background: #302850;
+  color: var(--accent);
+  font-weight: 750;
+}
+
+.brand span { width: 2rem; height: 2rem; }
+.top nav { gap: .25rem; }
+
+.top nav a {
+  color: var(--muted);
+  padding: .45rem .75rem;
+  border-radius: .5rem;
+}
+
+.top nav a:hover, .top nav a[aria-current] {
+  color: #fff;
+  background: #27283c;
+}
+
+.hero {
+  margin: .75rem 0 2rem;
+  padding: clamp(1.5rem, 6vw, 4.5rem);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  background: radial-gradient(ellipse at top right, #40316d, transparent 74%),
+              linear-gradient(145deg, #22243e, #171827);
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.35rem, 7vw, 5.25rem);
+  line-height: 1.04;
+  letter-spacing: -.055em;
+}
+
+.hero p {
+  margin: 1rem 0 0;
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: #dad8ec;
+}
+
+section + section { margin-top: 1.75rem; }
+
+h2 {
+  margin: 0 0 .75rem;
+  font-size: 1.2rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+  gap: .75rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: .8rem;
+  height: 100%;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: .9rem;
+  background: #191b2b;
+}
+
+.card:hover, .card:focus-visible {
+  border-color: var(--accent);
+  background: #24233d;
+}
+
+.card.featured { border-color: #66548d; }
+.icon { width: 2.65rem; height: 2.65rem; }
+.mint .icon { color: #9ce8d1; background: #203d3e; }
+.details strong, .details small { display: block; }
+.details small { color: var(--muted); margin-top: .3rem; line-height: 1.45; }
+.arrow { color: var(--accent); }
+
+footer {
+  border-top: 1px solid var(--border);
+  margin-top: 2.25rem;
+  padding: 1.2rem 0;
+  color: var(--muted);
+  font-size: .875rem;
+}
