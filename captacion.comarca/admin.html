@@ -111,9 +111,9 @@ dialog::backdrop{background:#050a08c9}
     </select></div>
                 <div class="field"><label for="filterPierna">Pierna dominante</label><select id="filterPierna">
         <option value="todos">Todas</option>
-        <option value="Derecha">Derecha</option>
-        <option value="Izquierda">Izquierda</option>
-        <option value="Ambidiestro">Ambidiestro</option>
+        <option value="diestro">Diestro</option>
+        <option value="zurdo">Zurdo</option>
+        <option value="ambidiestro">Ambidiestro</option>
     </select></div>
                 <div class="field"><label for="sortFecha">Orden y observaciones</label><select id="sortFecha">
         <option value="desc">Recientes primero</option>
@@ -318,6 +318,13 @@ dialog::backdrop{background:#050a08c9}
     }
 
     // 4. Lógica de Filtrado y Ordenación Dinámica en Memoria
+    const equivalenciasPierna = new Map(Object.entries({"derecha":"diestro","derecho":"diestro","izquierda":"zurdo","izquierdo":"zurdo","ambas":"ambidiestro","ambos":"ambidiestro","ambidiestra":"ambidiestro","diestra":"diestro","zurda":"zurdo"}));
+
+    function normalizarPierna(valor) {
+        const texto = String(valor ?? '').trim().toLowerCase();
+        return equivalenciasPierna.get(texto) ?? texto;
+    }
+
     function aplicarFiltros() {
         const busqueda = document.getElementById('searchNombre').value.toLowerCase().trim();
         const posicionSel = document.getElementById('filterPosicion').value;
@@ -332,7 +339,7 @@ dialog::backdrop{background:#050a08c9}
             const cumplePosicion = (posicionSel === 'todos') || (jugador.posicion === posicionSel);
             
             // Filtro de Pierna Dominante
-            const cumplePierna = (piernaSel === 'todos') || (jugador.pierna === piernaSel);
+            const cumplePierna = (piernaSel === 'todos') || (normalizarPierna(jugador.pierna) === piernaSel);
             
             // Filtro Con Observaciones (Excluye vacíos o el texto genérico)
             const cumpleNotas = (ordenSel !== 'notas') || 
