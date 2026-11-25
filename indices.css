@@ -131,3 +131,23 @@ footer {
   color: var(--muted);
   font-size: .875rem;
 }
+
+/* Pixel-art portrait for the skin gallery. */
+.skin-icon > span {
+  position: relative;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: linear-gradient(#29424f 25%, #e2ac83 25%, #e2ac83 75%, #4fa99d 75%);
+  box-shadow: inset .1875rem 0 #0002, inset -.1875rem 0 #0002;
+}
+
+.skin-icon > span::before {
+  position: absolute;
+  top: .56rem;
+  left: .375rem;
+  width: .1875rem;
+  height: .1875rem;
+  background: #18323c;
+  box-shadow: .5625rem 0 #18323c, .28125rem .375rem #9a574e;
+  content: "";
+}
