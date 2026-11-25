@@ -8,245 +8,126 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        .header-panel {
-            max-width: 800px;
-            margin: 0 auto 20px auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        h2 {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 800;
-            color: #4CAF50;
-            margin: 0;
-            text-transform: uppercase;
-        }
-        .btn-logout {
-            padding: 8px 15px;
-            background-color: #cf4444;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            font-family: 'Montserrat', sans-serif;
-        }
-        
-        /* Panel de Filtros y Búsqueda */
-        .filter-panel {
-            max-width: 800px;
-            margin: 0 auto 20px auto;
-            background-color: #1e1e1e;
-            padding: 15px;
-            border-radius: 8px;
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-            gap: 10px;
-            align-items: center;
-            border-bottom: 3px solid #4CAF50;
-        }
-        @media (max-width: 768px) {
-            .filter-panel {
-                grid-template-columns: 1fr;
-            }
-        }
-        .filter-panel input, .filter-panel select, .filter-panel button {
-            background-color: #2a2a2a;
-            color: #ffffff;
-            border: 1px solid #3b3b3b;
-            padding: 10px 12px;
-            border-radius: 5px;
-            font-family: 'Segoe UI', sans-serif;
-            font-size: 0.9em;
-            outline: none;
-            box-sizing: border-box;
-            width: 100%;
-        }
-        .filter-panel input:focus, .filter-panel select:focus {
-            border-color: #4CAF50;
-        }
-        .btn-clear {
-            background-color: #333333 !important;
-            cursor: pointer;
-            font-weight: bold;
-            border: none;
-            transition: background-color 0.2s;
-        }
-        .btn-clear:hover {
-            background-color: #444444 !important;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .jugador-card {
-            background-color: #1e1e1e;
-            padding: 15px 20px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-            border-left: 4px solid #4CAF50;
-        }
-        .jugador-card:hover {
-            transform: translateX(5px);
-            background-color: #252525;
-        }
-        .jugador-nombre {
-            font-weight: 600;
-            font-size: 1.1em;
-        }
-        .jugador-posicion {
-            background-color: #2a2a2a;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 0.85em;
-            color: #4CAF50;
-            font-weight: bold;
-        }
-        
-        /* Estilos del Modal (Perfil Completo) */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .modal-content {
-            background-color: #1e1e1e;
-            padding: 30px;
-            border-radius: 10px;
-            width: 100%;
-            max-width: 500px;
-            position: relative;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.7);
-        }
-        .close-modal {
-            position: absolute;
-            top: 15px; right: 20px;
-            font-size: 2em;
-            cursor: pointer;
-            color: #aaa;
-        }
-        .close-modal:hover { color: #fff; }
-        
-        .profile-header {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-        }
-        .profile-img {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            object-fit: cover;
-            background-color: #333;
-            border: 2px solid #4CAF50;
-        }
-        .profile-title h3 {
-            margin: 0;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.4em;
-        }
-        .profile-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        .info-item {
-            font-size: 0.95em;
-        }
-        .info-item strong {
-            color: #4CAF50;
-            display: block;
-            font-size: 0.85em;
-            text-transform: uppercase;
-            margin-bottom: 2px;
-        }
-        .info-full {
-            grid-column: span 2;
-            background-color: #262626;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 5px;
-        }
-    </style>
+:root{color-scheme:dark;--bg:#0c1412;--surface:#15201c;--line:#30423a;--text:#f1f7f3;--muted:#adbfB5;--accent:#c0f982}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font:1rem/1.5 'Segoe UI',system-ui,sans-serif}
+.shell{width:min(1180px,100% - 2rem);margin-inline:auto}
+.topbar{background:#101b16;border-bottom:1px solid var(--line)}
+.header-panel{min-height:68px;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.brand{display:flex;align-items:center;gap:.75rem;font-weight:750}
+.brand-mark{display:grid;place-items:center;width:2.2rem;height:2.2rem;border-radius:.65rem;background:var(--accent);color:#182711;font-size:1.25rem}
+main{padding-block:2rem 4rem}
+.intro{padding:clamp(1.25rem,4vw,2.75rem);margin-bottom:1.25rem;border:1px solid var(--line);border-radius:1.25rem;background:radial-gradient(ellipse at top right,#2c4a32,transparent 72%),#17271e}
+h1,h2,h3,p{margin:0}
+h1{font:800 clamp(2.25rem,6vw,4.25rem)/1.04 Montserrat,system-ui,sans-serif;letter-spacing:-.06em}
+h2{font-size:1.2rem}
+.intro p{margin-top:.7rem;color:var(--muted)}
+.workspace{display:grid;grid-template-columns:minmax(240px,.85fr) minmax(0,2fr);gap:1rem;align-items:start}
+.panel{min-width:0;padding:clamp(1rem,2.5vw,1.5rem);border:1px solid var(--line);border-radius:1rem;background:var(--surface)}
+.stack,.field,.filter-panel{display:grid;gap:.5rem}
+.stack{gap:1rem}
+.field{min-width:0}
+label{color:var(--muted);font-size:.86rem;font-weight:650}
+input,select,button,.action{font:inherit;border-radius:.55rem;min-height:44px}
+input,select{width:100%;border:1px solid var(--line);background:#0e1813;color:var(--text);padding:.55rem .7rem}
+button,.action{border:1px solid var(--line);padding:.55rem .85rem;color:var(--text);background:#23342a;font-weight:650;cursor:pointer}
+button:hover,.action:hover{background:#314638}
+button:disabled{opacity:.55;cursor:wait}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.primary{background:var(--accent);color:#12210d;border-color:transparent}
+.primary:hover{background:#d5ffab}
+.actions{display:flex;flex-wrap:wrap;gap:.5rem}
+.action{text-decoration:none;display:inline-flex;align-items:center}
+.status{margin-block:.75rem;color:var(--muted);overflow-wrap:anywhere}
+.status:empty{display:none}
+.filter-panel{grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;margin-block:1rem;align-items:end}
+.search{grid-column:span 2}
+#listaJugadores{display:grid;gap:.5rem}
+.jugador-card{width:100%;display:flex;align-items:center;justify-content:space-between;gap:.65rem;text-align:left;background:#101a15;padding:.8rem}
+.jugador-nombre{overflow-wrap:anywhere}
+.jugador-posicion{display:inline-block;color:var(--accent);background:#29422e;border-radius:1rem;padding:.2rem .65rem;font-size:.85rem}
+.empty{color:var(--muted);padding:1.4rem .5rem;text-align:center}
+dialog{width:min(32rem,100% - 2rem);max-height:calc(100dvh - 2rem);overflow:auto;border:1px solid var(--line);border-radius:1rem;padding:1.25rem;background:var(--surface);color:var(--text)}
+dialog::backdrop{background:#050a08c9}
+.close-modal{display:block;margin:0 0 .75rem auto}
+.profile-header{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
+.profile-img{width:76px;height:76px;object-fit:cover;border-radius:.85rem;background:#22372a}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.info-item{background:#101a15;padding:.65rem;border-radius:.5rem;overflow-wrap:anywhere}
+.info-item strong{display:block;color:var(--muted);font-size:.85rem}
+.info-full{grid-column:1/-1}
+@media(max-width:800px){.workspace{grid-template-columns:1fr}}
+@media(max-width:520px){.filter-panel{grid-template-columns:repeat(2,minmax(0,1fr))}.search{grid-column:1/-1}}
+</style>
 </head>
 <body>
 
-<div class="header-panel">
-    <h2>Panel de Captaciones</h2>
-    <button class="btn-logout" id="btnLogout">Salir</button>
-</div>
-
-<div class="filter-panel">
-    <section id="gestionarCaptaciones" hidden>
-        <form id="crearCaptacion">
-            <label for="nombreCaptacion">Nueva captación</label>
-            <input id="nombreCaptacion" maxlength="100" required placeholder="Nombre del formulario">
-            <button type="submit">Crear formulario</button>
-        </form>
-        <label for="selectCaptacion">Captación</label>
-        <select id="selectCaptacion"><option value="">Inscripciones anteriores</option></select>
-        <a id="enlaceCaptacion" hidden>Abrir enlace para compartir</a>
-        <button id="estadoFormulario" type="button" hidden></button>
+<header class="topbar">
+    <div class="header-panel shell">
+        <span class="brand"><span class="brand-mark" aria-hidden="true">C</span> Captaciones</span>
+        <button id="btnLogout" type="button">Cerrar sesión</button>
+    </div>
+</header>
+<main class="shell">
+    <section class="intro">
+        <h1>Panel de captaciones</h1>
+        <p>Crea formularios y revisa las inscripciones de tus aspirantes.</p>
     </section>
-    <p id="mensajeCaptaciones" role="status"></p>
-    <input type="text" id="searchNombre" placeholder="Buscar por nombre...">
-    
-    <select id="filterPosicion">
-        <option value="todos">Posición</option>
+    <div class="workspace">
+        <section class="panel stack" id="gestionarCaptaciones" hidden aria-labelledby="formulariosTitulo">
+            <h2 id="formulariosTitulo">Formularios</h2>
+            <form id="crearCaptacion" class="stack">
+                <div class="field">
+                    <label for="nombreCaptacion">Nombre de la nueva captación</label>
+                    <input id="nombreCaptacion" maxlength="100" required placeholder="Ej. Pruebas sénior">
+                </div>
+                <button class="primary" type="submit">Crear formulario</button>
+            </form>
+            <div class="field">
+                <label for="selectCaptacion">Captación seleccionada</label>
+                <select id="selectCaptacion"><option value="">Inscripciones anteriores</option></select>
+            </div>
+            <div class="actions">
+                <a class="action" id="enlaceCaptacion" hidden>Abrir formulario ↗</a>
+                <button id="copiarEnlace" type="button" hidden>Copiar enlace</button>
+                <button id="estadoFormulario" type="button" hidden></button>
+            </div>
+        </section>
+        <section class="panel" aria-labelledby="inscripcionesTitulo">
+            <h2 id="inscripcionesTitulo">Inscripciones</h2>
+            <p id="mensajeCaptaciones" class="status" role="status">Comprobando acceso…</p>
+            <div class="filter-panel" id="filtros" hidden>
+                <div class="field search"><label for="searchNombre">Buscar aspirante</label><input type="search" id="searchNombre" placeholder="Nombre del aspirante"></div>
+                <button id="btnLimpiar" type="button">Limpiar filtros</button>
+                <div class="field"><label for="filterPosicion">Posición</label><select id="filterPosicion">
+        <option value="todos">Todas</option>
         <option value="Portero">Portero</option>
         <option value="Central">Central</option>
         <option value="Lateral">Lateral</option>
         <option value="Medio centro">Medio centro</option>
         <option value="Delantero">Delantero</option>
-    </select>
-
-    <select id="filterPierna">
-        <option value="todos">Pierna</option>
+    </select></div>
+                <div class="field"><label for="filterPierna">Pierna dominante</label><select id="filterPierna">
+        <option value="todos">Todas</option>
         <option value="Derecha">Derecha</option>
         <option value="Izquierda">Izquierda</option>
         <option value="Ambidiestro">Ambidiestro</option>
-    </select>
-
-    <select id="sortFecha">
+    </select></div>
+                <div class="field"><label for="sortFecha">Orden y observaciones</label><select id="sortFecha">
         <option value="desc">Recientes primero</option>
         <option value="asc">Antiguos primero</option>
         <option value="notas">Con observaciones</option>
-    </select>
+    </select></div>
+            </div>
+            <div id="listaJugadores"></div>
+        </section>
+    </div>
+</main>
 
-    <button class="btn-clear" id="btnLimpiar">Limpiar</button>
-</div>
-
-<div class="container" id="listaJugadores">
-    <p style="text-align: center; color: #888;">Cargando aspirantes...</p>
-</div>
-
-<div class="modal" id="perfilModal">
+<dialog id="perfilModal" aria-labelledby="pNombre">
     <div class="modal-content">
-        <span class="close-modal" id="closeModal">&times;</span>
+        <form method="dialog"><button class="close-modal" id="closeModal">Cerrar ficha</button></form>
         <div class="profile-header">
             <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'><rect width='100%' height='100%' fill='%232a2a2a'/><text x='50%' y='50%' font-family='sans-serif' font-size='14' font-weight='bold' fill='%23888' dominant-baseline='middle' text-anchor='middle'>SIN FOTO</text></svg>" alt="Foto Jugador" class="profile-img" id="pFoto">
             <div class="profile-title">
@@ -259,11 +140,11 @@
             <div class="info-item"><strong>Edad</strong><span id="pEdad"></span> años</div>
             <div class="info-item"><strong>Pierna Dominante</strong><span id="pPierna"></span></div>
             <div class="info-item"><strong>Físico</strong><span id="pFisico"></span></div>
-            <div class="info-item" style="grid-column: span 2;"><strong>Último Equipo</strong><span id="pEquipo"></span></div>
-            <div class="info-item info-full"><strong>Observaciones del Jugador</strong><p id="pNotas" style="margin: 5px 0 0 0; font-size: 0.9em; color: #ccc;"></p></div>
+            <div class="info-item info-full"><strong>Último Equipo</strong><span id="pEquipo"></span></div>
+            <div class="info-item info-full"><strong>Observaciones del Jugador</strong><p id="pNotas"></p></div>
         </div>
     </div>
-</div>
+</dialog>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -288,6 +169,7 @@
     const selector = document.getElementById('selectCaptacion');
     const mensaje = document.getElementById('mensajeCaptaciones');
     const enlace = document.getElementById('enlaceCaptacion');
+    const copiar = document.getElementById('copiarEnlace');
     const toggle = document.getElementById('estadoFormulario');
     const crear = document.getElementById('crearCaptacion');
     let cacheJugadores = [];
@@ -307,6 +189,7 @@
             }
             await cargarCaptaciones('');
             document.getElementById('gestionarCaptaciones').hidden = false;
+            document.getElementById('filtros').hidden = false;
         } catch {
             mensaje.textContent = 'No se pudo abrir el panel.';
         }
@@ -328,13 +211,13 @@
         const id = selector.value;
         const datos = captaciones.get(id);
         const consulta = ++ultimaConsulta;
-        enlace.hidden = toggle.hidden = !datos;
+        enlace.hidden = copiar.hidden = toggle.hidden = !datos;
         if (datos) {
             enlace.href = 'index.html?captacion=' + encodeURIComponent(id);
             toggle.textContent = datos.abierta ? 'Cerrar formulario' : 'Reabrir formulario';
         }
         cacheJugadores = [];
-        renderizarLista(cacheJugadores);
+        document.getElementById('listaJugadores').replaceChildren();
         mensaje.textContent = 'Cargando inscripciones…';
         try {
             const origen = id ? collection(db, 'captaciones', id, 'inscripciones') : collection(db, 'jugadores');
@@ -347,6 +230,15 @@
             if (consulta === ultimaConsulta) mensaje.textContent = 'No se pudieron cargar las inscripciones.';
         }
     }
+
+    copiar.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(enlace.href);
+            mensaje.textContent = 'Enlace copiado.';
+        } catch {
+            mensaje.textContent = 'Abre el formulario para copiar su dirección.';
+        }
+    });
 
     selector.addEventListener('change', mostrarCaptacion);
     crear.addEventListener('submit', async event => {
@@ -394,12 +286,13 @@
         listaContenedor.innerHTML = ''; // Limpiar listado anterior
 
         if (lista.length === 0) {
-            listaContenedor.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">No hay ningún jugador que coincida con los filtros.</p>';
+            listaContenedor.innerHTML = '<p class="empty">No hay ningún jugador que coincida con los filtros.</p>';
             return;
         }
 
         lista.forEach((jugador) => {
-            const card = document.createElement('div');
+            const card = document.createElement('button');
+            card.type = 'button';
             card.className = 'jugador-card';
             const nombre = document.createElement('span');
             nombre.className = 'jugador-nombre';
@@ -482,13 +375,9 @@
         }
         imgElement.src = /^(https:\/\/|data:image\/jpeg;base64,)/i.test(foto) ? foto : fotoPorDefecto;
 
-        document.getElementById('perfilModal').style.display = 'flex';
+        document.getElementById('perfilModal').showModal();
     }
 
-    // Cerrar el modal
-    document.getElementById('closeModal').addEventListener('click', () => {
-        document.getElementById('perfilModal').style.display = 'none';
-    });
 
     // Cerrar sesión
     document.getElementById('btnLogout').addEventListener('click', () => {
