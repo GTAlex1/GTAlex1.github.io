@@ -79,7 +79,8 @@ btnResolver.addEventListener('click', async () => {
             });
         }
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${API_KEY}`, {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${API_KEY}`;
+        const opciones = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -105,11 +106,25 @@ btnResolver.addEventListener('click', async () => {
                     }
                 }
             })
-        });
+        };
+
+        let response;
+        for (const espera of [0, 2000, 4000]) {
+            if (espera) {
+                textoResultado.innerText = 'Gemini está saturado. Reintentando…';
+                await new Promise(resolve => setTimeout(resolve, espera));
+            }
+            response = await fetch(url, opciones);
+            if (response.status !== 503) break;
+        }
+
+        if (response.status === 503) {
+            textoResultado.innerText = 'Gemini sigue saturado. Tu enunciado y tu foto siguen ahí. Pulsa Resolver Problema para intentarlo de nuevo.';
+            return;
+        }
 
         const data = await response.json();
-
-        if (data.error) throw new Error(data.error.message);
+        if (!response.ok || data.error) throw new Error(data.error?.message ?? 'No se pudo consultar Gemini.');
 
         const respuesta = data.candidates?.[0]?.content?.parts
             ?.filter(parte => !parte.thought && typeof parte.text === 'string')
