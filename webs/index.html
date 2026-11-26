@@ -7,6 +7,20 @@
   <title>Webs de Kazus · Kazus</title>
   <link rel="stylesheet" href="../indices.css">
   <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png">
+  <style>
+    .category + .category { margin-top: 1rem; }
+    .category summary {
+      padding: .75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: .75rem;
+      background: #191b2b;
+      cursor: pointer;
+    }
+    .category summary::marker { color: var(--accent); }
+    .category summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    .category summary h2 { display: inline; margin: 0; }
+    .category[open] > .grid { margin-top: .75rem; }
+  </style>
 </head>
 <body>
   <header class="top">
@@ -21,8 +35,8 @@
       <h1>Webs de Kazus</h1>
       <p>Aplicaciones web reunidas en un solo sitio.</p>
     </div>
-    <section>
-      <h2>Proyecto destacado</h2>
+    <details class="category" open>
+      <summary><h2>Proyecto destacado</h2></summary>
       <ul class="grid">
         <li><a class="card featured" href="https://github.com/MisterAI-analitycs/misterai-frontend" target="_blank" rel="noopener">
           <span class="icon" aria-hidden="true">⚽</span>
@@ -30,18 +44,13 @@
           <span class="arrow" aria-hidden="true">↗</span>
         </a></li>
       </ul>
-    </section>
-    <section>
-      <h2>Aplicaciones</h2>
+    </details>
+    <details class="category" open>
+      <summary><h2>Aplicaciones</h2></summary>
       <ul class="grid">
         <li><a class="card featured" href="compra/" target="_blank" rel="noopener">
           <img class="icon" src="compra/favicon.svg" alt="" width="42" height="42">
           <span class="details"><strong>Asistente de compras</strong><small>Organiza tus compras.</small></span>
-          <span class="arrow" aria-hidden="true">↗</span>
-        </a></li>
-        <li><a class="card mint" href="ludos/" target="_blank" rel="noopener">
-          <img class="icon" src="ludos/favicon.svg" alt="" width="42" height="42">
-          <span class="details"><strong>Ludos</strong><small>Proyecto archivado · la calculadora de física ya no está activa.</small></span>
           <span class="arrow" aria-hidden="true">↗</span>
         </a></li>
         <li><a class="card " href="/BaseDeDatos/" target="_blank" rel="noopener">
@@ -60,9 +69,9 @@
           <span class="arrow" aria-hidden="true">↗</span>
         </a></li>
       </ul>
-    </section>
-    <section>
-      <h2>Herramientas de trabajo</h2>
+    </details>
+    <details class="category" open>
+      <summary><h2>Herramientas de trabajo</h2></summary>
       <ul class="grid">
         <li><a class="card mint" href="captaciones/" target="_blank" rel="noopener">
           <span class="icon" aria-hidden="true">⚽</span>
@@ -80,9 +89,9 @@
           <span class="arrow" aria-hidden="true">↗</span>
         </a></li>
       </ul>
-    </section>
-    <section>
-      <h2>Roleplay</h2>
+    </details>
+    <details class="category">
+      <summary><h2>Roleplay</h2></summary>
       <ul class="grid">
         <li><a class="card mint" href="https://moonlight-team-whatsapp.github.io/" target="_blank" rel="noopener">
           <span class="icon" aria-hidden="true">☾</span>
@@ -95,7 +104,17 @@
           <span class="arrow" aria-hidden="true">↗</span>
         </a></li>
       </ul>
-    </section>
+    </details>
+    <details class="category">
+      <summary><h2>Archivados</h2></summary>
+      <ul class="grid">
+        <li><a class="card mint" href="ludos/" target="_blank" rel="noopener">
+          <img class="icon" src="ludos/favicon.svg" alt="" width="42" height="42">
+          <span class="details"><strong>Ludos</strong><small>Proyecto archivado · la calculadora de física ya no está activa.</small></span>
+          <span class="arrow" aria-hidden="true">↗</span>
+        </a></li>
+      </ul>
+    </details>
   </main>
   <footer>© Kazus Suzak</footer>
 </body>
