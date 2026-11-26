@@ -1,59 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ludópatas.uma - Física AI</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ludos · Proyecto archivado</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="stylesheet" href="../../indices.css">
 </head>
 <body>
-
-<div class="container">
-    <div id="mainView">
-        <div style="text-align: right;">
-            <button id="btnConfig" class="btn-config">⚙️ Configurar API</button>
-        </div>
-
-        <h1>Calculadora física</h1>
-        <p class="tagline">Dime tu problema a calcular</p>
-        
-        <div class="input-group">
-            <textarea id="enunciado" placeholder="Diseñado para: agamer40, Fi, Froba, pendejo no dura nada y Pepe &#10&#10&#10&#10&#10Por Saint-Saënz"></textarea>
-        </div>
-
-        <div class="input-group">
-            <label for="foto" class="custom-file-upload">
-                📷 Adjuntar imagen del problema
-            </label>
-            <input type="file" id="foto" accept="image/*">
-            <div class="preview-container">
-                <img id="preview" src="#" alt="Vista previa">
-            </div>
-        </div>
-
-        <button id="btnResolver">Resolver Problema</button>
-
-        <div id="resultado" class="result-box">
-            <h3>Solución:</h3>
-            <div id="textoResultado">Esperando enunciado...</div>
-        </div>
+  <header class="top">
+    <a class="brand" href="../"><span aria-hidden="true">K</span> Webs de Kazus</a>
+  </header>
+  <main>
+    <div class="hero">
+      <img src="./favicon.svg" alt="" width="64" height="64">
+      <h1>Ludos</h1>
+      <p><strong>Proyecto archivado.</strong> La calculadora ya no está activa.</p>
+      <p>Ludos resolvía problemas de física a partir de un enunciado escrito o una foto. Identificaba los datos y las unidades y mostraba la fórmula y la solución paso a paso.</p>
     </div>
-
-    <div id="configMode" style="display: none; text-align: center;">
-        <h1>Configuración Privada</h1>
-        <p class="tagline">Introduce tu API Key de Google AI Studio.</p>
-        
-        <div class="input-group">
-            <textarea id="apiInput" placeholder="Pega aquí tu Gemini API Key..." style="height: 100px;"></textarea>
-        </div>
-        
-        <button id="btnGuardarConfig">Guardar y Volver</button>
-        <p id="statusKey" style="margin-top: 15px; font-size: 0.8rem; color: #00adb5;"></p>
-    </div>
-</div>
-
-<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-<script src="script.js"></script>
+    <ul class="grid">
+      <li><a class="card" href="https://github.com/GTAlex1/GTAlex1.github.io/tree/cd1b59000a18604fecb7f2999e77ec62a735d2e6/webs/ludos" target="_blank" rel="noopener">
+        <span class="details"><strong>Ver el código de la calculadora</strong></span>
+        <span class="arrow" aria-hidden="true">↗</span>
+      </a></li>
+    </ul>
+  </main>
+  <footer>© Kazus Suzak</footer>
 </body>
 </html>
