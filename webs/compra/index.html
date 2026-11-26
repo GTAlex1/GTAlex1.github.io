@@ -7,7 +7,7 @@
     <meta name="referrer" content="no-referrer">
     <title>Asistente de compras</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./styles.css?v=2">
     <script type="module" src="./app.js"></script>
 </head>
 <body>
@@ -21,8 +21,13 @@
     </header>
     <main class="shell">
         <section class="hero">
-            <h1>Planifica tu compra</h1>
-            <p>Elige qué vas a preparar y lleva al súper una lista ordenada por temperatura.</p>
+            <div class="hero-copy">
+                <h1>Planifica <em>tu compra.</em></h1>
+                <p>Elige qué vas a preparar y lleva al súper una lista ordenada por temperatura.</p>
+            </div>
+            <div class="hero-art" aria-hidden="true">
+                <div class="receipt"><i></i><i></i><i></i></div>
+            </div>
         </section>
         <p id="status" class="status" role="status"></p>
         <section id="menu">
