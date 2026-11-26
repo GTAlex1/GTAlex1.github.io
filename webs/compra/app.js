@@ -262,7 +262,8 @@ get('auth-form').addEventListener('submit', async event => {
             setAuthMode(false);
             get('auth-message').textContent = 'Revisa tu correo para confirmar la cuenta y, después, inicia sesión.';
         } else {
-            await backend.signIn(email, password);
+            const notice = await backend.signIn(email, password);
+            if (notice) get('auth-message').textContent = notice;
         }
     } catch {
         get('auth-message').textContent = signup
