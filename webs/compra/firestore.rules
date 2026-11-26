@@ -13,19 +13,18 @@ service cloud.firestore {
         && name.matches('(?s).*[^[:space:]].*');
     }
 
+    function validIngredient(item) {
+      return item is map && item.size() == 2
+        && validName(item.n) && item.t in [0, 1, 2];
+    }
+
     function validIngredientAt(items, index) {
-      return items.size() <= index || (
-        items[index] is map
-        && items[index].keys().hasAll(['n', 't'])
-        && items[index].keys().hasOnly(['n', 't'])
-        && validName(items[index].n)
-        && items[index].t in [0, 1, 2]
-      );
+      return items.size() <= index || validIngredient(items[index]);
     }
 
     function validIngredients(items) {
       // Firestore Rules cannot iterate over a list.
-      return items is list && items.size() > 0 && items.size() <= 40
+      return items is list && items.size() > 0 && items.size() <= 12
         && validIngredientAt(items, 0)
         && validIngredientAt(items, 1)
         && validIngredientAt(items, 2)
@@ -37,35 +36,7 @@ service cloud.firestore {
         && validIngredientAt(items, 8)
         && validIngredientAt(items, 9)
         && validIngredientAt(items, 10)
-        && validIngredientAt(items, 11)
-        && validIngredientAt(items, 12)
-        && validIngredientAt(items, 13)
-        && validIngredientAt(items, 14)
-        && validIngredientAt(items, 15)
-        && validIngredientAt(items, 16)
-        && validIngredientAt(items, 17)
-        && validIngredientAt(items, 18)
-        && validIngredientAt(items, 19)
-        && validIngredientAt(items, 20)
-        && validIngredientAt(items, 21)
-        && validIngredientAt(items, 22)
-        && validIngredientAt(items, 23)
-        && validIngredientAt(items, 24)
-        && validIngredientAt(items, 25)
-        && validIngredientAt(items, 26)
-        && validIngredientAt(items, 27)
-        && validIngredientAt(items, 28)
-        && validIngredientAt(items, 29)
-        && validIngredientAt(items, 30)
-        && validIngredientAt(items, 31)
-        && validIngredientAt(items, 32)
-        && validIngredientAt(items, 33)
-        && validIngredientAt(items, 34)
-        && validIngredientAt(items, 35)
-        && validIngredientAt(items, 36)
-        && validIngredientAt(items, 37)
-        && validIngredientAt(items, 38)
-        && validIngredientAt(items, 39);
+        && validIngredientAt(items, 11);
     }
 
     function validMeal(meal) {

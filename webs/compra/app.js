@@ -300,7 +300,7 @@ function addIngredient(ingredient = { n: '', t: 0 }, focus = false) {
 
 function updateIngredientButtons() {
     const rows = get('ingredient-fields').children;
-    get('add-ingredient').disabled = rows.length >= 40;
+    get('add-ingredient').disabled = rows.length >= 12;
     for (const row of rows) row.querySelector('button').disabled = rows.length <= 1;
 }
 
