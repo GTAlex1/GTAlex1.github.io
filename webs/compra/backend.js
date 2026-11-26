@@ -8,6 +8,7 @@ export async function connect(onAccount) {
     ]);
     const app = appSdk.initializeApp(firebaseConfig);
     const auth = authSdk.initializeAuth(app, { persistence: authSdk.browserSessionPersistence });
+    auth.languageCode = 'es';
     const db = dbSdk.getFirestore(app);
     const meals = user => dbSdk.collection(db, 'shopping_users', user.id, 'meals');
 
