@@ -1,6 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="15" fill="#30382e"/>
-  <rect x="11" y="15" width="42" height="34" rx="6" fill="#f6ecda"/>
-  <circle cx="40" cy="25" r="4" fill="#a45331"/>
-  <path d="m14 43 12-15 9 10 5-5 10 10v2H14Z" fill="#4d654d" stroke-linejoin="round"/>
+  <title>RLC233</title>
+  <circle cx="32" cy="32" r="31" fill="#fff" stroke="#171717" stroke-width="2"/>
+  <g fill="none" stroke="#171717" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 41V23h7c8 0 8 9 0 9H9m6 0 9 9"/>
+    <path d="M27 23v18h8"/>
+    <path d="M49 24a10 10 0 1 0 0 16"/>
+  </g>
+  <text x="56" y="35" text-anchor="end" font-family="Arial,sans-serif" font-weight="700" font-size="8" fill="#171717">233</text>
 </svg>
