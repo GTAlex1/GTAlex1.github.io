@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Captaciones - Comarca de Jerez</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+:root{color-scheme:dark;--bg:#0c1412;--surface:#15201c;--line:#30423a;--text:#f1f7f3;--muted:#adbfB5;--accent:#c0f982}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font:1rem/1.5 'Segoe UI',system-ui,sans-serif}
+.shell{width:min(1180px,100% - 2rem);margin-inline:auto}
+.topbar{background:#101b16;border-bottom:1px solid var(--line)}
+.header-panel{min-height:68px;display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.brand{display:flex;align-items:center;gap:.75rem;font-weight:750}
+.brand-mark{display:grid;place-items:center;width:2.2rem;height:2.2rem;border-radius:.65rem;background:var(--accent);color:#182711;font-size:1.25rem}
+main{padding-block:2rem 4rem}
+.intro{padding:clamp(1.25rem,4vw,2.75rem);margin-bottom:1.25rem;border:1px solid var(--line);border-radius:1.25rem;background:radial-gradient(ellipse at top right,#2c4a32,transparent 72%),#17271e}
+h1,h2,h3,p{margin:0}
+h1{font:800 clamp(2.25rem,6vw,4.25rem)/1.04 Montserrat,system-ui,sans-serif;letter-spacing:-.06em}
+h2{font-size:1.2rem}
+.intro p{margin-top:.7rem;color:var(--muted)}
+.workspace{display:grid;grid-template-columns:minmax(240px,.85fr) minmax(0,2fr);gap:1rem;align-items:start}
+.panel{min-width:0;padding:clamp(1rem,2.5vw,1.5rem);border:1px solid var(--line);border-radius:1rem;background:var(--surface)}
+.stack,.field,.filter-panel{display:grid;gap:.5rem}
+.stack{gap:1rem}
+.field{min-width:0}
+label{color:var(--muted);font-size:.86rem;font-weight:650}
+input,select,button,.action{font:inherit;border-radius:.55rem;min-height:44px}
+input,select{width:100%;border:1px solid var(--line);background:#0e1813;color:var(--text);padding:.55rem .7rem}
+button,.action{border:1px solid var(--line);padding:.55rem .85rem;color:var(--text);background:#23342a;font-weight:650;cursor:pointer}
+button:hover,.action:hover{background:#314638}
+button:disabled{opacity:.55;cursor:wait}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.primary{background:var(--accent);color:#12210d;border-color:transparent}
+.primary:hover{background:#d5ffab}
+.actions{display:flex;flex-wrap:wrap;gap:.5rem}
+.action{text-decoration:none;display:inline-flex;align-items:center}
+.status{margin-block:.75rem;color:var(--muted);overflow-wrap:anywhere}
+.status:empty{display:none}
+.filter-panel{grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;margin-block:1rem;align-items:end}
+.search{grid-column:span 2}
+#listaJugadores{display:grid;gap:.5rem}
+.jugador-card{width:100%;display:flex;align-items:center;justify-content:space-between;gap:.65rem;text-align:left;background:#101a15;padding:.8rem}
+.jugador-nombre{overflow-wrap:anywhere}
+.jugador-posicion{display:inline-block;color:var(--accent);background:#29422e;border-radius:1rem;padding:.2rem .65rem;font-size:.85rem}
+.empty{color:var(--muted);padding:1.4rem .5rem;text-align:center}
+dialog{width:min(32rem,100% - 2rem);max-height:calc(100dvh - 2rem);overflow:auto;border:1px solid var(--line);border-radius:1rem;padding:1.25rem;background:var(--surface);color:var(--text)}
+dialog::backdrop{background:#050a08c9}
+.close-modal{display:block;margin:0 0 .75rem auto}
+.profile-header{display:flex;align-items:center;gap:1rem;margin-bottom:1rem}
+.profile-img{width:76px;height:76px;object-fit:cover;border-radius:.85rem;background:#22372a}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.info-item{background:#101a15;padding:.65rem;border-radius:.5rem;overflow-wrap:anywhere}
+.info-item strong{display:block;color:var(--muted);font-size:.85rem}
+.info-full{grid-column:1/-1}
+@media(max-width:800px){.workspace{grid-template-columns:1fr}}
+@media(max-width:520px){.filter-panel{grid-template-columns:repeat(2,minmax(0,1fr))}.search{grid-column:1/-1}}
+</style>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+</head>
+<body>
+
+<header class="topbar">
+    <div class="header-panel shell">
+        <span class="brand"><span class="brand-mark" aria-hidden="true">C</span> Captaciones</span>
+        <button id="btnLogout" type="button">Cerrar sesión</button>
+    </div>
+</header>
+<main class="shell">
+    <section class="intro">
+        <h1>Panel de captaciones</h1>
+        <p>Crea formularios y revisa las inscripciones de tus aspirantes.</p>
+    </section>
+    <div class="workspace">
+        <section class="panel stack" id="gestionarCaptaciones" hidden aria-labelledby="formulariosTitulo">
+            <h2 id="formulariosTitulo">Formularios</h2>
+            <form id="crearCaptacion" class="stack">
+                <div class="field">
+                    <label for="nombreCaptacion">Nombre de la nueva captación</label>
+                    <input id="nombreCaptacion" maxlength="100" required placeholder="Ej. Pruebas sénior">
+                </div>
+                <button class="primary" type="submit">Crear formulario</button>
+            </form>
+            <div class="field">
+                <label for="selectCaptacion">Captación seleccionada</label>
+                <select id="selectCaptacion"></select>
+            </div>
+            <div class="actions">
+                <a class="action" id="enlaceCaptacion" hidden>Abrir formulario ↗</a>
+                <button id="copiarEnlace" type="button" hidden>Copiar enlace</button>
+                <button id="estadoFormulario" type="button" hidden></button>
+            </div>
+        </section>
+        <section class="panel" aria-labelledby="inscripcionesTitulo">
+            <h2 id="inscripcionesTitulo">Inscripciones</h2>
+            <p id="mensajeCaptaciones" class="status" role="status">Comprobando acceso…</p>
+            <div class="filter-panel" id="filtros" hidden>
+                <div class="field search"><label for="searchNombre">Buscar aspirante</label><input type="search" id="searchNombre" placeholder="Nombre del aspirante"></div>
+                <button id="btnLimpiar" type="button">Limpiar filtros</button>
+                <div class="field"><label for="filterPosicion">Posición</label><select id="filterPosicion">
+        <option value="todos">Todas</option>
+        <option value="Portero">Portero</option>
+        <option value="Central">Central</option>
+        <option value="Lateral">Lateral</option>
+        <option value="Medio centro">Medio centro</option>
+        <option value="Delantero">Delantero</option>
+    </select></div>
+                <div class="field"><label for="filterPierna">Pierna dominante</label><select id="filterPierna">
+        <option value="todos">Todas</option>
+        <option value="diestro">Diestro</option>
+        <option value="zurdo">Zurdo</option>
+        <option value="ambidiestro">Ambidiestro</option>
+    </select></div>
+                <div class="field"><label for="sortFecha">Orden y observaciones</label><select id="sortFecha">
+        <option value="desc">Recientes primero</option>
+        <option value="asc">Antiguos primero</option>
+        <option value="notas">Con observaciones</option>
+    </select></div>
+            </div>
+            <div id="listaJugadores"></div>
+        </section>
+    </div>
+</main>
+
+<dialog id="perfilModal" aria-labelledby="pNombre">
+    <div class="modal-content">
+        <form method="dialog"><button class="close-modal" id="closeModal">Cerrar ficha</button></form>
+        <div class="profile-header">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'><rect width='100%' height='100%' fill='%232a2a2a'/><text x='50%' y='50%' font-family='sans-serif' font-size='14' font-weight='bold' fill='%23888' dominant-baseline='middle' text-anchor='middle'>SIN FOTO</text></svg>" alt="Foto Jugador" class="profile-img" id="pFoto">
+            <div class="profile-title">
+                <h3 id="pNombre">Nombre Completo</h3>
+                <span class="jugador-posicion" id="pPosicion">Posición</span>
+            </div>
+        </div>
+        <div class="profile-grid">
+            <div class="info-item"><strong>Teléfono</strong><span id="pTelefono"></span></div>
+            <div class="info-item"><strong>Edad</strong><span id="pEdad"></span> años</div>
+            <div class="info-item"><strong>Pierna Dominante</strong><span id="pPierna"></span></div>
+            <div class="info-item"><strong>Físico</strong><span id="pFisico"></span></div>
+            <div class="info-item info-full"><strong>Último Equipo</strong><span id="pEquipo"></span></div>
+            <div class="info-item info-full"><strong>Observaciones del Jugador</strong><p id="pNotas"></p></div>
+        </div>
+    </div>
+</dialog>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, query, orderBy, getDocs, doc, getDoc, addDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // CONFIGURACIÓN DE FIREBASE
+    const firebaseConfig = {
+        apiKey: "AIzaSyCtGIdiB6TX4tmSJDypRKpBA3QYEW6BpyU",
+        authDomain: "captacion-comarca.firebaseapp.com",
+        projectId: "captacion-comarca",
+        storageBucket: "captacion-comarca.firebasestorage.app",
+        messagingSenderId: "566356053681",
+        appId: "1:566356053681:web:3c525086a5587b0484dc90"
+    };
+
+    console.log("1. Inicializando Firebase...");
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const selector = document.getElementById('selectCaptacion');
+    const mensaje = document.getElementById('mensajeCaptaciones');
+    const enlace = document.getElementById('enlaceCaptacion');
+    const copiar = document.getElementById('copiarEnlace');
+    const toggle = document.getElementById('estadoFormulario');
+    const crear = document.getElementById('crearCaptacion');
+    let cacheJugadores = [];
+    const captacionComarca = 'comarca-senior';
+    let captaciones = new Map();
+    let ultimaConsulta = 0;
+
+    onAuthStateChanged(auth, async user => {
+        if (!user) {
+            location.href = 'login.html';
+            return;
+        }
+        try {
+            const permiso = await getDoc(doc(db, 'administradores', user.uid));
+            if (permiso.data()?.activo !== true) {
+                mensaje.textContent = 'Tu cuenta no tiene acceso al panel de captaciones.';
+                return;
+            }
+            await cargarCaptaciones(captacionComarca);
+            document.getElementById('gestionarCaptaciones').hidden = false;
+            document.getElementById('filtros').hidden = false;
+        } catch {
+            mensaje.textContent = 'No se pudo abrir el panel.';
+        }
+    });
+
+    async function cargarCaptaciones(seleccion) {
+        const resultado = await getDocs(collection(db, 'captaciones'));
+        captaciones = new Map(resultado.docs.map(item => [item.id, item.data()]));
+        selector.replaceChildren();
+        const ordenadas = [...captaciones].sort((a, b) => a[1].nombre.localeCompare(b[1].nombre, 'es'));
+        for (const [id, datos] of ordenadas) {
+            selector.add(new Option(datos.nombre + (datos.abierta ? '' : ' (cerrada)'), id));
+        }
+        if (captaciones.has(seleccion)) selector.value = seleccion;
+        await mostrarCaptacion();
+    }
+
+    async function mostrarCaptacion() {
+        const id = selector.value;
+        const datos = captaciones.get(id);
+        const consulta = ++ultimaConsulta;
+        enlace.hidden = copiar.hidden = toggle.hidden = !datos;
+        if (datos) {
+            enlace.href = 'index.html?captacion=' + encodeURIComponent(id);
+            toggle.textContent = datos.abierta ? 'Cerrar formulario' : 'Reabrir formulario';
+        }
+        cacheJugadores = [];
+        document.getElementById('listaJugadores').replaceChildren();
+        if (!datos) {
+            mensaje.textContent = 'Todavía no hay formularios de captación.';
+            return;
+        }
+        mensaje.textContent = 'Cargando inscripciones…';
+        try {
+            const origenes = [collection(db, 'captaciones', id, 'inscripciones')];
+            if (id === captacionComarca) origenes.push(collection(db, 'jugadores'));
+            const resultados = await Promise.all(origenes.map(origen =>
+                getDocs(query(origen, orderBy('fechaRegistro', 'desc')))
+            ));
+            if (consulta !== ultimaConsulta) return;
+            cacheJugadores = resultados.flatMap(resultado => resultado.docs.map(item => item.data()));
+            cacheJugadores.sort((a, b) => (b.fechaRegistro?.toMillis() ?? 0) - (a.fechaRegistro?.toMillis() ?? 0));
+            aplicarFiltros();
+            mensaje.textContent = '';
+        } catch {
+            if (consulta === ultimaConsulta) mensaje.textContent = 'No se pudieron cargar las inscripciones.';
+        }
+    }
+
+    copiar.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(enlace.href);
+            mensaje.textContent = 'Enlace copiado.';
+        } catch {
+            mensaje.textContent = 'Abre el formulario para copiar su dirección.';
+        }
+    });
+
+    selector.addEventListener('change', mostrarCaptacion);
+    crear.addEventListener('submit', async event => {
+        event.preventDefault();
+        const campo = document.getElementById('nombreCaptacion');
+        const boton = crear.querySelector('button');
+        const nombre = campo.value.trim();
+        if (!nombre || boton.disabled) return;
+        boton.disabled = true;
+        try {
+            const item = await addDoc(collection(db, 'captaciones'), { nombre, abierta: true });
+            await cargarCaptaciones(item.id);
+            campo.value = '';
+        } catch {
+            mensaje.textContent = 'No se pudo crear la captación.';
+        } finally {
+            boton.disabled = false;
+        }
+    });
+
+    toggle.addEventListener('click', async () => {
+        const id = selector.value;
+        const datos = captaciones.get(id);
+        if (!datos || toggle.disabled) return;
+        toggle.disabled = true;
+        try {
+            await updateDoc(doc(db, 'captaciones', id), { abierta: !datos.abierta });
+            await cargarCaptaciones(id);
+        } catch {
+            mensaje.textContent = 'No se pudo cambiar el estado de la captación.';
+        } finally {
+            toggle.disabled = false;
+        }
+    });
+
+    document.getElementById('searchNombre').addEventListener('input', aplicarFiltros);
+    for (const id of ['filterPosicion', 'filterPierna', 'sortFecha']) {
+        document.getElementById(id).addEventListener('change', aplicarFiltros);
+    }
+    document.getElementById('btnLimpiar').addEventListener('click', limpiarFiltros);
+
+    // 3. Función exclusiva para pintar los elementos filtrados en el DOM
+    function renderizarLista(lista) {
+        const listaContenedor = document.getElementById('listaJugadores');
+        listaContenedor.innerHTML = ''; // Limpiar listado anterior
+
+        if (lista.length === 0) {
+            listaContenedor.innerHTML = '<p class="empty">No hay ningún jugador que coincida con los filtros.</p>';
+            return;
+        }
+
+        lista.forEach((jugador) => {
+            const card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'jugador-card';
+            const nombre = document.createElement('span');
+            nombre.className = 'jugador-nombre';
+            nombre.textContent = jugador.nombre ?? '';
+            const posicion = document.createElement('span');
+            posicion.className = 'jugador-posicion';
+            posicion.textContent = jugador.posicion ?? '';
+            card.append(nombre, posicion);
+            
+            card.addEventListener('click', () => abrirPerfil(jugador));
+            listaContenedor.appendChild(card);
+        });
+    }
+
+    // 4. Lógica de Filtrado y Ordenación Dinámica en Memoria
+    const equivalenciasPierna = new Map(Object.entries({"derecha":"diestro","derecho":"diestro","izquierda":"zurdo","izquierdo":"zurdo","ambas":"ambidiestro","ambos":"ambidiestro","ambidiestra":"ambidiestro","diestra":"diestro","zurda":"zurdo"}));
+
+    function normalizarPierna(valor) {
+        const texto = String(valor ?? '').trim().toLowerCase();
+        return equivalenciasPierna.get(texto) ?? texto;
+    }
+
+    function aplicarFiltros() {
+        const busqueda = document.getElementById('searchNombre').value.toLowerCase().trim();
+        const posicionSel = document.getElementById('filterPosicion').value;
+        const piernaSel = document.getElementById('filterPierna').value;
+        const ordenSel = document.getElementById('sortFecha').value;
+
+        let resultado = cacheJugadores.filter(jugador => {
+            // Búsqueda por texto (Nombre)
+            const cumpleNombre = jugador.nombre ? jugador.nombre.toLowerCase().includes(busqueda) : false;
+            
+            // Filtro de Posición
+            const cumplePosicion = (posicionSel === 'todos') || (jugador.posicion === posicionSel);
+            
+            // Filtro de Pierna Dominante
+            const cumplePierna = (piernaSel === 'todos') || (normalizarPierna(jugador.pierna) === piernaSel);
+            
+            // Filtro Con Observaciones (Excluye vacíos o el texto genérico)
+            const cumpleNotas = (ordenSel !== 'notas') || 
+                (jugador.notas && jugador.notas.trim() !== "" && jugador.notas !== "Sin observaciones adicionales." && jugador.notas !== "Sin observaciones adicionales");
+
+            return cumpleNombre && cumplePosicion && cumplePierna && cumpleNotas;
+        });
+
+        // Ordenar según los timestamps de registro
+        if (ordenSel === 'asc') {
+            resultado.sort((a, b) => (a.fechaRegistro?.seconds || 0) - (b.fechaRegistro?.seconds || 0));
+        } else if (ordenSel === 'desc') {
+            resultado.sort((a, b) => (b.fechaRegistro?.seconds || 0) - (a.fechaRegistro?.seconds || 0));
+        }
+
+        renderizarLista(resultado);
+    }
+
+    // 5. Función del botón Limpiar para restablecer el panel
+    function limpiarFiltros() {
+        document.getElementById('searchNombre').value = '';
+        document.getElementById('filterPosicion').value = 'todos';
+        document.getElementById('filterPierna').value = 'todos';
+        document.getElementById('sortFecha').value = 'desc';
+        renderizarLista(cacheJugadores);
+    }
+
+    // 6. Rellenar y desplegar el modal del perfil de forma segura
+    function abrirPerfil(jugador) {
+        document.getElementById('pNombre').innerText = jugador.nombre;
+        document.getElementById('pPosicion').innerText = jugador.posicion;
+        document.getElementById('pTelefono').innerText = jugador.telefono;
+        document.getElementById('pEdad').innerText = jugador.edad;
+        document.getElementById('pPierna').innerText = jugador.pierna;
+        document.getElementById('pFisico').innerText = `${jugador.altura || '--'} cm / ${jugador.peso || '--'} kg`;
+        document.getElementById('pEquipo').innerText = jugador.equipo_anterior || "Ninguno / Agente libre";
+        document.getElementById('pNotas').innerText = jugador.notes || jugador.notas || "Sin observaciones adicionales.";
+        
+        const imgElement = document.getElementById('pFoto');
+        const fotoPorDefecto = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='150' height='150' viewBox='0 0 150 150'><rect width='100%' height='100%' fill='%232a2a2a'/><text x='50%' y='50%' font-family='sans-serif' font-size='14' font-weight='bold' fill='%23888' dominant-baseline='middle' text-anchor='middle'>SIN FOTO</text></svg>";
+
+        imgElement.onerror = () => {
+            imgElement.onerror = null;
+            imgElement.src = fotoPorDefecto;
+        };
+        let foto = typeof jugador.foto === 'string' ? jugador.foto.trim() : '';
+        if (/^https:\/\/drive\.google\.com\//i.test(foto)) {
+            const id = foto.match(/\/d\/([\w-]+)/)?.[1] ?? new URL(foto).searchParams.get('id');
+            if (id) foto = 'https://drive.google.com/thumbnail?sz=w500&id=' + encodeURIComponent(id);
+        }
+        imgElement.src = /^(https:\/\/|data:image\/jpeg;base64,)/i.test(foto) ? foto : fotoPorDefecto;
+
+        document.getElementById('perfilModal').showModal();
+    }
+
+
+    // Cerrar sesión
+    document.getElementById('btnLogout').addEventListener('click', () => {
+        signOut(auth).then(() => {
+            window.location.href = 'login.html';
+        });
+    });
+</script>
+</body>
+</html>
