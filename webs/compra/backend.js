@@ -10,10 +10,15 @@ export async function connect(onAccount) {
     const auth = authSdk.initializeAuth(app, { persistence: authSdk.browserSessionPersistence });
     auth.languageCode = 'es';
     const db = dbSdk.getFirestore(app);
-    const meals = user => dbSdk.collection(db, 'shopping_users', user.id, 'meals');
+    const userItems = (user, path) => dbSdk.collection(db, 'shopping_users', user.id, path);
+    const meals = user => userItems(user, 'meals');
+    const categories = user => userItems(user, 'categories');
+    const templateMarker = user => dbSdk.doc(userItems(user, 'settings'), 'template');
+    const entries = snapshot => snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }))
+        .sort((a, b) => a.name.localeCompare(b.name, 'es'));
 
     authSdk.onAuthStateChanged(auth, user => {
-        onAccount(user?.emailVerified ? { id: user.uid, email: user.email } : null);
+        setTimeout(() => onAccount(user?.emailVerified ? { id: user.uid, email: user.email } : null), 0);
     });
 
     return {
@@ -39,10 +44,40 @@ export async function connect(onAccount) {
         async signOut() {
             await authSdk.signOut(auth);
         },
-        async listMeals(user) {
-            const snapshot = await dbSdk.getDocs(meals(user));
-            return snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }))
-                .sort((a, b) => a.name.localeCompare(b.name, 'es'));
+        async listMenu(user) {
+            const [mealData, categoryData, marker] = await Promise.all([
+                dbSdk.getDocs(meals(user)), dbSdk.getDocs(categories(user)), dbSdk.getDoc(templateMarker(user))
+            ]);
+            return { meals: entries(mealData), categories: entries(categoryData), templateApplied: marker.exists() };
+        },
+        async saveCategory(user, id, name) {
+            const ref = id ? dbSdk.doc(categories(user), id) : dbSdk.doc(categories(user));
+            const data = { name, removed: false };
+            await dbSdk.setDoc(ref, data);
+            return { ...data, id: ref.id };
+        },
+        async removeCategory(user, category) {
+            await dbSdk.setDoc(dbSdk.doc(categories(user), category.id), { name: category.name, removed: true });
+        },
+        async applyTemplate(user, template, currentCategories, currentMeals) {
+            const batch = dbSdk.writeBatch(db);
+            batch.set(templateMarker(user), { applied: true });
+            for (const [name, dishes] of template) {
+                const sameName = [...currentCategories.values()].find(category =>
+                    !category.removed && category.name.localeCompare(name, 'es', { sensitivity: 'base' }) === 0);
+                const category = currentCategories.get(name) ?? sameName;
+                if (category?.removed) continue;
+                const id = category?.id ?? name;
+                if (!category || category.legacy) {
+                    batch.set(dbSdk.doc(categories(user), id), { name, removed: false });
+                }
+                for (const dish of dishes) {
+                    if (currentMeals.some(meal => meal.category === id &&
+                        meal.name.localeCompare(dish.name, 'es', { sensitivity: 'base' }) === 0)) continue;
+                    batch.set(dbSdk.doc(meals(user)), { ...dish, category: id });
+                }
+            }
+            await batch.commit();
         },
         async saveMeal(user, id, meal) {
             if (id) {

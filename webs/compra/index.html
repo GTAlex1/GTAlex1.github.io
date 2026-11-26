@@ -26,21 +26,20 @@
         </section>
         <p id="status" class="status" role="status"></p>
         <section id="menu">
-            <nav class="tabs" aria-label="Ver comidas">
-                <button id="show-catalog" type="button" aria-pressed="true">Catálogo</button>
-                <button id="show-personal" type="button" aria-pressed="false">Mis comidas</button>
-            </nav>
-            <div id="catalog"></div>
-            <section id="personal" hidden>
+            <section id="personal">
                 <div class="section-head">
-                    <h2>Mis comidas</h2>
-                    <button id="add-meal" class="primary" type="button" hidden>Nueva comida</button>
+                    <h2 id="meals-title" tabindex="-1">Mis comidas</h2>
+                    <div class="card-actions">
+                        <button id="apply-template" type="button">Aplicar plantilla</button>
+                        <button id="add-category" type="button" hidden>Nueva categoría</button>
+                        <button id="add-meal" class="primary" type="button" hidden>Nueva comida</button>
+                    </div>
                 </div>
                 <p id="personal-message"></p>
                 <button id="retry" type="button" hidden>Reintentar</button>
-                <div id="personal-meals" class="grid"></div>
+                <div id="personal-meals"></div>
             </section>
-            <div class="action-bar">
+            <div id="shopping-actions" class="action-bar" hidden>
                 <span id="selection-count" aria-live="polite">0 productos seleccionados</span>
                 <button id="generate" class="primary" type="button" disabled>Ver lista de la compra</button>
             </div>
@@ -85,6 +84,20 @@
                 <button class="primary" type="submit">Guardar comida</button>
             </fieldset>
             <p id="meal-message" class="status" role="status"></p>
+        </form>
+    </dialog>
+
+    <dialog id="category-dialog" aria-labelledby="category-title">
+        <form id="category-form">
+            <div class="section-head">
+                <h2 id="category-title">Nueva categoría</h2>
+                <button type="button" class="close" data-close aria-label="Cerrar">×</button>
+            </div>
+            <fieldset id="category-fields">
+                <label>Nombre de la categoría<input id="category-name" maxlength="80" required></label>
+                <button class="primary" type="submit">Guardar categoría</button>
+            </fieldset>
+            <p id="category-message" class="status" role="status"></p>
         </form>
     </dialog>
 

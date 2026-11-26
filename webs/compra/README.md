@@ -1,6 +1,6 @@
 # Asistente de compras
 
-El catálogo y la lista funcionan sin cuenta. En **Mis comidas**, cada usuario puede guardar platos con sus ingredientes, elegir la temperatura de conservación y añadirlos a la misma lista que los platos del catálogo.
+En **Mis comidas**, cada cuenta puede empezar desde cero o pulsar **Aplicar plantilla** para copiar una selección inicial de categorías y platos. La plantilla se puede aplicar una vez por cuenta. Puedes editar tus platos y gestionar tus categorías. Al quitar una categoría, sus platos pasan a **Sin categoría**.
 
 ## Firebase
 

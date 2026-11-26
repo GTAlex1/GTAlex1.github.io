@@ -12,7 +12,7 @@
 [hidden] { display: none !important; }
 body { margin: 0; background: radial-gradient(ellipse at 45% 0%, #241837, transparent 44rem); min-height: 100vh; }
 .shell { width: min(100% - 2rem, 70rem); margin-inline: auto; }
-.top, .brand, .account, .section-head, .tabs, .action-bar, .card-actions {
+.top, .brand, .account, .section-head, .action-bar, .card-actions {
     display: flex;
     align-items: center;
     gap: .65rem;
@@ -47,8 +47,6 @@ button:disabled { cursor: default; opacity: .5; }
 .primary { background: var(--accent); color: #201433; border-color: transparent; }
 .primary:hover:not(:disabled) { background: #dfcaff; }
 .danger { color: #ffd3dc; background: #57263c; }
-.tabs { border-bottom: 1px solid var(--line); padding-bottom: .8rem; margin-bottom: 1.5rem; }
-.tabs [aria-pressed="true"] { background: #382955; border-color: #9475d2; color: #f0e5ff; }
 .category, #personal { margin-bottom: 2rem; }
 .category h2, .section-head, #results > h2 { margin-bottom: .8rem; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); gap: .85rem; align-items: start; }
@@ -115,10 +113,5 @@ fieldset input, fieldset select {
     .ingredient-fields-row { grid-template-columns: minmax(0, 1fr) auto; }
     .ingredient-fields-row label:first-child { grid-column: 1 / -1; }
 }
-.category-count {
-    display: inline-block;
-    margin-inline-start: .65rem;
-    color: var(--muted);
-    font-size: .78rem;
-    font-weight: 500;
-}
+.category .section-head h3 { font-size: 1.15rem; }
+.category .card-actions { padding-top: 0; }

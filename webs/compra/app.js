@@ -4,8 +4,12 @@ import { connect } from './backend.js';
 const get = id => document.getElementById(id);
 const temperatures = ['Ambiente', 'Nevera', 'Congelador'];
 const aisles = ['Pasillo seco', 'Refrigerados', 'Congelados'];
-const categories = Object.keys(catalogo);
-const catalogChecks = get('catalog');
+const template = Object.entries(catalogo);
+const categoryDialog = get('category-dialog');
+const mealCards = new Map();
+let categories = new Map();
+let templateApplied = false;
+let editingCategory;
 const personalChecks = get('personal-meals');
 const authDialog = get('auth-dialog');
 const mealDialog = get('meal-dialog');
@@ -47,7 +51,7 @@ function productCheck(name, temperature, shopping = false) {
     return { row, check };
 }
 
-function mealCard(meal, personal = false) {
+function mealCard(meal) {
     const card = element('article', undefined, 'card');
     const top = element('div', undefined, 'card-top');
     const all = element('input');
@@ -81,34 +85,45 @@ function mealCard(meal, personal = false) {
     details.append(summary, list);
     top.append(all, details);
     card.append(top);
-    if (personal) {
-        card.dataset.id = meal.id;
-        const actions = element('div', undefined, 'card-actions');
-        actions.append(element('span', meal.category, 'temperature-label'),
-            button('Editar', () => openMeal(meal)),
-            button('Eliminar', () => openDelete(meal)));
-        card.append(actions);
-    }
+    const actions = element('div', undefined, 'card-actions');
+    actions.append(button('Editar', () => openMeal(meal)), button('Eliminar', () => openDelete(meal)));
+    card.append(actions);
     return card;
 }
 
-function renderCatalog() {
-    for (const [category, meals] of Object.entries(catalogo)) {
+function visibleCategories() {
+    return [...categories.values()].filter(category => !category.removed);
+}
+
+function renderMeals() {
+    const sections = new Map();
+    const content = document.createDocumentFragment();
+    const addSection = (id, name) => {
         const section = element('section', undefined, 'category');
-        const heading = element('h2', category);
-        if (category === 'Comida' || category === 'Cena') {
-            const counter = element('span', '0 platos seleccionados', 'category-count');
-            heading.append(counter);
-            section.addEventListener('change', () => {
-                const count = section.querySelectorAll('.select-meal:checked').length;
-                counter.textContent = `${count} ${count === 1 ? 'plato seleccionado' : 'platos seleccionados'}`;
-            });
+        const heading = element('div', undefined, 'section-head');
+        heading.append(element('h3', name));
+        if (id) {
+            const actions = element('div', undefined, 'card-actions');
+            actions.append(button('Renombrar categoría', () => openCategory(categories.get(id))),
+                button('Quitar categoría', () => openDelete(categories.get(id), true)));
+            heading.append(actions);
         }
         const grid = element('div', undefined, 'grid');
-        grid.append(...meals.map(meal => mealCard(meal)));
         section.append(heading, grid);
-        catalogChecks.append(section);
+        sections.set(id, grid);
+        content.append(section);
+    };
+    for (const { id, name } of visibleCategories()) addSection(id, name);
+    for (const { meal, card } of mealCards.values()) {
+        const id = sections.has(meal.category) ? meal.category : '';
+        if (!sections.has(id)) addSection('', 'Sin categoría');
+        sections.get(id).append(card);
     }
+    personalChecks.replaceChildren(content);
+    get('personal-message').textContent = mealCards.size || sections.size ? '' : 'Aplica la plantilla o crea tu primera comida.';
+    get('apply-template').hidden = templateApplied;
+    get('shopping-actions').hidden = !mealCards.size;
+    updateSelection();
 }
 
 function selectedProducts() {
@@ -167,19 +182,12 @@ function showMenu() {
     get('results').hidden = true;
     get('shopping').replaceChildren();
     get('menu').hidden = false;
-    (get('generate').disabled ? get('show-catalog') : get('generate')).focus();
-}
-
-function showPersonal(personal) {
-    catalogChecks.hidden = personal;
-    get('personal').hidden = !personal;
-    get('show-catalog').setAttribute('aria-pressed', String(!personal));
-    get('show-personal').setAttribute('aria-pressed', String(personal));
+    (get('generate').disabled ? get('meals-title') : get('generate')).focus();
 }
 
 function guestMessage() {
     get('personal-message').textContent = backend
-        ? 'Inicia sesión para crear tus propias comidas.'
+        ? 'Inicia sesión para guardar tus comidas y categorías.'
         : 'El acceso a cuentas todavía no está disponible.';
 }
 
@@ -187,18 +195,31 @@ async function loadMeals() {
     const version = accountVersion;
     get('retry').hidden = true;
     get('add-meal').disabled = true;
+    get('add-category').disabled = true;
+    get('apply-template').disabled = true;
     get('personal-message').textContent = 'Cargando tus comidas…';
     try {
-        const meals = await backend.listMeals(account);
+        const data = await backend.listMenu(account);
         if (version !== accountVersion) return;
-        personalChecks.replaceChildren(...meals.map(meal => mealCard(meal, true)));
-        get('personal-message').textContent = meals.length ? '' : 'Todavía no tienes comidas. Añade la primera.';
+        categories = new Map(data.categories.map(category => [category.id, category]));
+        for (const meal of data.meals) {
+            if (Object.hasOwn(catalogo, meal.category) && !categories.has(meal.category)) {
+                categories.set(meal.category, { id: meal.category, name: meal.category, legacy: true });
+            }
+            mealCards.set(meal.id, { meal, card: mealCards.get(meal.id)?.card ?? mealCard(meal) });
+        }
+        for (const id of mealCards.keys()) {
+            if (!data.meals.some(meal => meal.id === id)) mealCards.delete(id);
+        }
+        templateApplied = data.templateApplied;
+        renderMeals();
+        get('add-meal').disabled = false;
+        get('add-category').disabled = false;
+        get('apply-template').disabled = false;
     } catch {
         if (version !== accountVersion) return;
         get('retry').hidden = false;
         get('personal-message').textContent = 'No se pudieron cargar tus comidas.';
-    } finally {
-        if (version === accountVersion) get('add-meal').disabled = false;
     }
 }
 
@@ -207,21 +228,28 @@ function setAccount(user) {
     account = user;
     accountVersion++;
     personalChecks.replaceChildren();
+    mealCards.clear();
+    categories.clear();
+    templateApplied = false;
+    get('apply-template').hidden = false;
+    get('apply-template').disabled = false;
+    get('shopping-actions').hidden = true;
     purchased.clear();
     updateSelection();
     if (!get('results').hidden) showShopping(false);
     mealDialog.close();
     deleteDialog.close();
+    categoryDialog.close();
     get('retry').hidden = true;
     get('login').hidden = Boolean(user);
     get('logout').hidden = !user;
     get('add-meal').hidden = !user;
+    get('add-category').hidden = !user;
     get('account-email').hidden = !user;
     get('account-email').textContent = user?.email ?? '';
 
     if (user) {
         authDialog.close();
-        showPersonal(true);
         void loadMeals();
     } else {
         guestMessage();
@@ -245,7 +273,7 @@ function openAuth() {
     get('auth-fields').disabled = !backend;
     get('auth-description').textContent = backend
         ? 'Entra para guardar y editar tus propias comidas.'
-        : 'El acceso a cuentas todavía no está disponible. Puedes usar el catálogo y generar tu lista.';
+        : 'El acceso a cuentas todavía no está disponible.';
     authDialog.showModal();
 }
 
@@ -308,7 +336,9 @@ function openMeal(meal) {
     editing = meal;
     get('meal-title').textContent = meal ? 'Editar comida' : 'Nueva comida';
     get('meal-name').value = meal?.name ?? '';
-    get('meal-category').value = meal?.category ?? 'Comida';
+    const select = get('meal-category');
+    select.replaceChildren(new Option('Sin categoría', ''), ...visibleCategories().map(({id, name}) => new Option(name, id)));
+    select.value = visibleCategories().some(category => category.id === meal?.category) ? meal.category : '';
     get('meal-message').textContent = '';
     get('ingredient-fields').replaceChildren();
     (meal?.ingredients ?? [undefined]).forEach(ingredient => addIngredient(ingredient));
@@ -316,17 +346,42 @@ function openMeal(meal) {
 }
 
 function updatePersonalCard(meal, previous) {
-    const oldCard = [...personalChecks.children].find(card => card.dataset.id === (previous ?? meal.id));
-    if (meal) {
-        const newCard = mealCard(meal, true);
-        if (oldCard) oldCard.replaceWith(newCard);
-        else personalChecks.prepend(newCard);
-    } else {
-        oldCard?.remove();
-    }
-    get('personal-message').textContent = personalChecks.children.length ? '' : 'Todavía no tienes comidas. Añade la primera.';
-    updateSelection();
+    if (meal) mealCards.set(meal.id, { meal, card: mealCard(meal) });
+    else mealCards.delete(previous);
+    renderMeals();
 }
+
+function openCategory(category) {
+    editingCategory = category;
+    get('category-title').textContent = category ? 'Renombrar categoría' : 'Nueva categoría';
+    get('category-name').value = category?.name ?? '';
+    get('category-message').textContent = '';
+    categoryDialog.showModal();
+}
+
+get('category-form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const version = accountVersion;
+    const name = get('category-name').value.trim();
+    const message = get('category-message');
+    if (!name || visibleCategories().some(category =>
+        category.id !== editingCategory?.id && category.name.localeCompare(name, 'es', { sensitivity: 'base' }) === 0)) {
+        message.textContent = 'Escribe un nombre que no esté en uso.';
+        return;
+    }
+    get('category-fields').disabled = true;
+    try {
+        const category = await backend.saveCategory(account, editingCategory?.id, name);
+        if (version !== accountVersion) return;
+        categories.set(category.id, category);
+        renderMeals();
+        categoryDialog.close();
+    } catch {
+        if (version === accountVersion) message.textContent = 'No se pudo guardar la categoría.';
+    } finally {
+        get('category-fields').disabled = false;
+    }
+});
 
 get('meal-form').addEventListener('submit', async event => {
     event.preventDefault();
@@ -357,9 +412,14 @@ get('meal-form').addEventListener('submit', async event => {
     }
 });
 
-function openDelete(meal) {
-    deleting = meal.id;
-    get('delete-description').textContent = `Se eliminará «${meal.name}» de tus comidas.`;
+function openDelete(item, category = false) {
+    deleting = { item, category };
+    const title = category ? 'Quitar categoría' : 'Eliminar comida';
+    get('delete-title').textContent = title;
+    get('delete-confirm').textContent = title;
+    get('delete-description').textContent = category
+        ? `Se quitará «${item.name}». Sus comidas pasarán a «Sin categoría».`
+        : `Se eliminará «${item.name}» de tus comidas.`;
     get('delete-message').textContent = '';
     deleteDialog.showModal();
 }
@@ -367,22 +427,28 @@ function openDelete(meal) {
 get('delete-form').addEventListener('submit', async event => {
     event.preventDefault();
     const version = accountVersion;
-    const id = deleting;
+    const { item, category } = deleting;
     get('delete-confirm').disabled = true;
     try {
-        await backend.deleteMeal(account, id);
+        if (category) await backend.removeCategory(account, item);
+        else await backend.deleteMeal(account, item.id);
         if (version !== accountVersion) return;
-        updatePersonalCard(null, id);
+        if (category) {
+            categories.set(item.id, { ...item, removed: true });
+            renderMeals();
+        } else {
+            updatePersonalCard(null, item.id);
+        }
         deleteDialog.close();
-        get('status').textContent = 'Comida eliminada.';
+        get('status').textContent = category ? 'Categoría quitada.' : 'Comida eliminada.';
     } catch {
-        if (version === accountVersion) get('delete-message').textContent = 'No se pudo eliminar la comida. Inténtalo de nuevo.';
+        if (version === accountVersion) get('delete-message').textContent = 'No se pudo completar el cambio. Inténtalo de nuevo.';
     } finally {
         get('delete-confirm').disabled = false;
     }
 });
 
-for (const dialog of [authDialog, mealDialog, deleteDialog]) {
+for (const dialog of [authDialog, mealDialog, deleteDialog, categoryDialog]) {
     const busy = () => Boolean(dialog.querySelector('fieldset:disabled, button[type="submit"]:disabled'));
     dialog.querySelector('[data-close]').addEventListener('click', () => {
         if (!busy() || (dialog === authDialog && !backend)) dialog.close();
@@ -392,9 +458,30 @@ for (const dialog of [authDialog, mealDialog, deleteDialog]) {
     });
 }
 authDialog.addEventListener('close', () => { get('password').value = ''; });
-categories.forEach(category => get('meal-category').add(new Option(category, category)));
-get('show-catalog').addEventListener('click', () => showPersonal(false));
-get('show-personal').addEventListener('click', () => showPersonal(true));
+get('add-category').addEventListener('click', () => openCategory());
+get('apply-template').addEventListener('click', async () => {
+    if (!account) {
+        openAuth();
+        return;
+    }
+    const version = accountVersion;
+    const status = get('status');
+    get('apply-template').disabled = true;
+    get('add-category').disabled = true;
+    get('add-meal').disabled = true;
+    try {
+        await backend.applyTemplate(account, template, categories, [...mealCards.values()].map(entry => entry.meal));
+        if (version !== accountVersion) return;
+        await loadMeals();
+        if (version === accountVersion) status.textContent = 'Plantilla aplicada.';
+    } catch {
+        if (version !== accountVersion) return;
+        status.textContent = 'No se pudo aplicar la plantilla. Recarga la página si ya la aplicaste en otra pestaña.';
+        get('apply-template').disabled = false;
+        get('add-category').disabled = false;
+        get('add-meal').disabled = false;
+    }
+});
 get('generate').addEventListener('click', () => showShopping());
 get('back').addEventListener('click', showMenu);
 get('login').addEventListener('click', openAuth);
@@ -414,7 +501,6 @@ get('add-meal').addEventListener('click', () => openMeal());
 get('add-ingredient').addEventListener('click', () => addIngredient(undefined, true));
 get('retry').addEventListener('click', loadMeals);
 
-renderCatalog();
 guestMessage();
 connect(setAccount).then(connection => {
     backend = connection;

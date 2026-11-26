@@ -43,10 +43,23 @@ service cloud.firestore {
       return meal.keys().hasAll(['name', 'category', 'ingredients'])
         && meal.keys().hasOnly(['name', 'category', 'ingredients'])
         && validName(meal.name)
-        && meal.category in [
-          'Desayuno', 'Comida', 'Cena', 'Bebidas', 'Lácteos', 'Complementos', 'Despensa', 'Limpieza'
-        ]
+        && meal.category is string
+        && (meal.category == '' || validName(meal.category))
         && validIngredients(meal.ingredients);
+    }
+
+    match /shopping_users/{uid}/categories/{categoryId} {
+      allow read: if owner(uid);
+      allow create, update: if owner(uid)
+        && request.resource.data.keys().hasAll(['name', 'removed'])
+        && request.resource.data.keys().hasOnly(['name', 'removed'])
+        && validName(request.resource.data.name)
+        && request.resource.data.removed is bool;
+    }
+
+    match /shopping_users/{uid}/settings/template {
+      allow get: if owner(uid);
+      allow create: if owner(uid) && request.resource.data == {'applied': true};
     }
 
     match /shopping_users/{uid}/meals/{mealId} {
